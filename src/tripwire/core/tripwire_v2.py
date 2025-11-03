@@ -105,7 +105,7 @@ class TripWireV2:
         loader: Optional[EnvFileLoader] = None,
         inference_engine: Optional[TypeInferenceEngine] = None,
         sources: Optional[List[EnvSource]] = None,
-        collect_errors: bool = True,
+        collect_errors: bool = False,
     ) -> None:
         """Initialize TripWireV2 with optional component injection.
 
@@ -123,7 +123,7 @@ class TripWireV2:
                      Mutually exclusive with loader parameter
                      RECOMMENDED for plugin usage - pass plugin instances here
             collect_errors: Whether to collect all validation errors and report together
-                           (default: True for better UX, set False for legacy fail-fast behavior)
+                           (default: False for fail-fast behavior, set True for better UX)
 
         Important Usage Patterns:
             Pattern 1 - Direct sources (RECOMMENDED):

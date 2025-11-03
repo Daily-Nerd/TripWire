@@ -425,11 +425,11 @@ class TestBackwardCompatibility:
             del os.environ["TEST_VAR"]
 
     def test_default_behavior_is_error_collection(self):
-        """Test that default behavior is error collection (new behavior)."""
+        """Test that default behavior is fail-fast (fail-fast behavior)."""
         env = TripWireV2(auto_load=False)
 
-        # Should have error collection enabled by default
-        assert env.collect_errors is True
+        # Should have fail-fast enabled by default (collect_errors=False)
+        assert env.collect_errors is False
 
     def test_can_disable_error_collection(self):
         """Test that error collection can be disabled for legacy behavior."""

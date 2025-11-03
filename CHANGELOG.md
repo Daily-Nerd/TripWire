@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.13.1] - 2025-11-03
+
+### Changed
+
+- **FIXED: `collect_errors` now defaults to `False` for fail-fast behavior** - TripWire now fails immediately on validation errors instead of collecting them
+  - **Previous default**: `collect_errors=True` - collected all validation errors and reported them together
+  - **New default**: `collect_errors=False` - fails immediately on first validation error (import-time validation)
+  - **Rationale**: Aligns with TripWire's core value proposition: "Fail fast at import time, not in production"
+  - **Migration**: If you prefer error collection, explicitly pass `collect_errors=True` to `TripWire()` or `TripWireV2()`
+  - **Example**:
+    ```python
+    # Old behavior (now requires explicit flag)
+    from tripwire import TripWire
+    env = TripWire(collect_errors=True)  # Collect all errors
+    env.require("VAR1")
+    env.require("VAR2")
+    env.finalize()  # Raises TripWireMultiValidationError with all errors
+
+    # New default behavior (fail-fast)
+    env = TripWire()  # collect_errors=False by default
+    env.require("VAR1")  # Raises immediately if VAR1 is missing
+    ```
+  - **Impact**: Tests that expected error collection by default have been updated to explicitly set `collect_errors=True`
+
 ## [0.13.0] - 2025-10-16
 
 ### Added
@@ -1539,7 +1563,8 @@ utils/ subdirectories
 - CLI implementation with rich output
 - Project initialization (`init` command)
 
-[Unreleased]: https://github.com/Daily-Nerd/TripWire/compare/v0.13.0...HEAD
+[Unreleased]: https://github.com/Daily-Nerd/TripWire/compare/v0.13.1...HEAD
+[0.13.1]: https://github.com/Daily-Nerd/TripWire/compare/v0.13.0...v0.13.1
 [0.13.0]: https://github.com/Daily-Nerd/TripWire/compare/v0.12.4...v0.13.0
 [0.12.4]: https://github.com/Daily-Nerd/TripWire/compare/v0.12.3...v0.12.4
 [0.12.3]: https://github.com/Daily-Nerd/TripWire/compare/v0.12.2...v0.12.3

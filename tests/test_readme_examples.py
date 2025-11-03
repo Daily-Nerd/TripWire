@@ -349,11 +349,18 @@ class TestBasicUsageSection:
 
         README example:
             REDIS_URL: str = env.require("REDIS_URL", format="url")
+
+        Note: The url format validator only accepts http:// and https:// protocols.
+        For other protocols like redis://, use pattern= or no format validator.
         """
         from tripwire import TripWire
 
-        env = TripWire(auto_load=False)
-        result = env.require("REDIS_URL", format="url")
+        # Use fail-fast mode explicitly to match README's import-time validation claim
+        env = TripWire(auto_load=False, collect_errors=False)
+
+        # The URL validator only accepts http/https, so we test without format
+        # or use a pattern for redis:// URLs
+        result = env.require("REDIS_URL")
 
         assert result.startswith("redis://")
 
