@@ -15,3 +15,4 @@ dist/*
 .coverage*
 # Internal documentation
 docs/internal/*
+agent-os/

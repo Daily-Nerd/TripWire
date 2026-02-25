@@ -1,0 +1,95 @@
+# Implementation Memory
+# Learnings from implementing features, bug fixes, and refactors
+
+version: "1.0"
+last_updated: "2025-11-21"
+
+learnings:
+  - id: custom-validator-ast-limitation
+    date: "2024-10-15"
+    context: "Custom validators and schema from-code command"
+    problem: |
+      Custom validators register at import-time, but `schema from-code`
+      uses AST parsing (no execution). Custom validators won't be available
+      during schema generation.
+    solution: |
+      Generate schema first, then validate separately:
+      ```bash
+      tripwire schema from-code   # Generate (no validation)
+      tripwire schema check       # Validate (validators registered)
+      ```
+    files:
+      - src/tripwire/scanner.py
+      - src/tripwire/validation.py
+
+  - id: redos-vulnerability-fix
+    date: "2024-10-10"
+    context: "Secret detection patterns"
+    problem: |
+      Regex patterns without upper bounds (e.g., `[a-z]+$`) can cause
+      ReDoS (Regular Expression Denial of Service) attacks with crafted input.
+    solution: |
+      Added upper bounds to all regex quantifiers in secret patterns.
+      Example: `gh[pousr]_[0-9a-zA-Z]{36,255}` instead of `gh[pousr]_[0-9a-zA-Z]+`
+    files:
+      - src/tripwire/secrets.py
+      - src/tripwire/validation.py
+
+  - id: sources-loader-api-confusion
+    date: "2024-10-12"
+    context: "Plugin system API design"
+    problem: |
+      Users confused sources= and loader= parameters, passing EnvFileLoader
+      to sources= which expects EnvSource instances.
+    solution: |
+      Added explicit validation in TripWire.__init__ that checks each item
+      in sources= and raises ValueError with clear guidance if EnvFileLoader
+      is detected.
+    files:
+      - src/tripwire/core/tripwire_v2.py
+
+  - id: collect-errors-atexit
+    date: "2024-10-14"
+    context: "Multi-error validation reporting"
+    problem: |
+      Using sys.exit() in atexit callbacks causes "Exception ignored" messages.
+    solution: |
+      Use os._exit(1) instead of sys.exit(1) in _finalize_validation().
+      os._exit bypasses cleanup but ensures clean exit without error messages.
+    files:
+      - src/tripwire/core/tripwire_v2.py
+
+  - id: placeholder-secret-detection
+    date: "2024-10-11"
+    context: "Secret scanning false negatives"
+    problem: |
+      Common placeholder values like "password" have low entropy but should
+      still be flagged when variable name contains secret keywords.
+    solution: |
+      Added placeholder detection bypass in detect_generic_credential() that
+      marks values as secrets based on variable name context, regardless of
+      entropy/complexity checks.
+    files:
+      - src/tripwire/secrets.py
+
+best_practices:
+  - category: security
+    practices:
+      - "Always add upper bounds to regex quantifiers to prevent ReDoS"
+      - "Use pre-compiled regex patterns for performance (10-20x speedup)"
+      - "Limit input sizes (MAX_ENTROPY_STRING_LENGTH = 10000)"
+      - "Never log secret values in error messages"
+
+  - category: testing
+    practices:
+      - "Use isolated_env fixture for tests needing clean environment"
+      - "Use monkeypatch.setenv() instead of os.environ[] for auto-cleanup"
+      - "Create fresh TripWire instances in tests to avoid global state"
+      - "Use collect_errors=False for testing error behavior"
+
+  - category: api-design
+    practices:
+      - "Validate constructor parameters early with clear error messages"
+      - "Include CORRECT and WRONG examples in error messages"
+      - "Use Protocol for structural typing, ABC for concrete bases"
+      - "Follow from-*/to-* naming for schema transformation commands"

@@ -1,0 +1,88 @@
+version: "1.0"
+last_updated: "2025-11-21"
+
+codebase_info:
+  name: TripWire
+  primary_language: Python
+  python_version: "3.11+"
+  framework: Click (CLI), Custom core library
+  architecture: Modular library with plugin system
+  test_framework: pytest
+  last_analyzed: "2025-11-21"
+
+patterns:
+  - id: import-time-validation
+    name: Import-Time Validation Pattern
+    file: patterns/import-time-validation.md
+    category: core
+    confidence: high
+    usage_count: 50+
+    keywords: [require, optional, env, validation, fail-fast]
+
+  - id: type-inference
+    name: Type Inference Pattern
+    file: patterns/type-inference.md
+    category: core
+    confidence: high
+    usage_count: 30+
+    keywords: [type, annotation, inference, strategy]
+
+  - id: chain-of-responsibility-validation
+    name: Chain of Responsibility Validation
+    file: patterns/chain-validation.md
+    category: core
+    confidence: high
+    usage_count: 20+
+    keywords: [orchestrator, rule, validation, chain]
+
+  - id: secret-detection
+    name: Secret Detection Pattern
+    file: patterns/secret-detection.md
+    category: security
+    confidence: high
+    usage_count: 45+
+    keywords: [secret, pattern, entropy, detection, redact]
+
+  - id: plugin-architecture
+    name: Plugin Architecture Pattern
+    file: patterns/plugin-architecture.md
+    category: extensibility
+    confidence: high
+    usage_count: 10+
+    keywords: [plugin, protocol, source, metadata, registry]
+
+  - id: cli-command-structure
+    name: CLI Command Structure Pattern
+    file: patterns/cli-command-structure.md
+    category: cli
+    confidence: high
+    usage_count: 15+
+    keywords: [click, command, group, rich, console]
+
+  - id: error-handling
+    name: Actionable Error Handling Pattern
+    file: patterns/error-handling.md
+    category: core
+    confidence: high
+    usage_count: 20+
+    keywords: [exception, error, multi-validation, actionable]
+
+  - id: testing-patterns
+    name: Testing Patterns
+    file: patterns/testing-patterns.md
+    category: testing
+    confidence: high
+    usage_count: 50+
+    keywords: [pytest, fixture, monkeypatch, isolated_env]
+
+gotchas:
+  - id: sources-vs-loader
+    name: Sources vs Loader Parameter
+    file: gotchas/sources-vs-loader.md
+    severity: critical
+
+decisions:
+  - id: adr-001
+    name: Nested Configuration Support
+    file: decisions/adr-001-nested-config.md
+    status: proposed
