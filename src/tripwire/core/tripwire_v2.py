@@ -566,7 +566,9 @@ class TripWireV2:
             >>> env = TripWireV2(auto_load=False)
             >>> env.load_files([".env", ".env.local", ".env.production"])
         """
-        sources: List[EnvSource] = [DotenvFileSource(Path(p), override=override) for p in file_paths]
+        sources: List[EnvSource] = [
+            DotenvFileSource(Path(p), override=override) for p in file_paths
+        ]
         temp_loader = EnvFileLoader(sources, strict=self.strict)
         temp_loader.load_all()
 

@@ -318,7 +318,9 @@ class TestValidation:
         env = TripWireV2(auto_load=False)
         monkeypatch.setenv("EMAIL", "test@example.com")
 
-        EMAIL: str = env.require("EMAIL", format="email", min_length=5, max_length=100, pattern=r".*@example\.com$")
+        EMAIL: str = env.require(
+            "EMAIL", format="email", min_length=5, max_length=100, pattern=r".*@example\.com$"
+        )
 
         assert EMAIL == "test@example.com"
 
@@ -379,7 +381,10 @@ class TestDependencyInjection:
         custom_loader = EnvFileLoader([], strict=False)
 
         env = TripWireV2(
-            registry=custom_registry, inference_engine=custom_engine, loader=custom_loader, auto_load=False
+            registry=custom_registry,
+            inference_engine=custom_engine,
+            loader=custom_loader,
+            auto_load=False,
         )
 
         monkeypatch.setenv("TEST", "value")
