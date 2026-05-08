@@ -104,11 +104,7 @@ def sanitize_git_pattern(pattern: str, max_length: int = _MAX_PATTERN_LENGTH) ->
     bounded_repetition_match = re.search(r"\{(\d+)(?:,(\d+))?\}", pattern)
     if bounded_repetition_match:
         min_count = int(bounded_repetition_match.group(1))
-        max_count = (
-            int(bounded_repetition_match.group(2))
-            if bounded_repetition_match.group(2)
-            else min_count
-        )
+        max_count = int(bounded_repetition_match.group(2)) if bounded_repetition_match.group(2) else min_count
 
         # If repetition count is > 1000, it's potentially dangerous
         if max_count > 1000 or min_count > 1000:
@@ -316,9 +312,7 @@ def run_git_command(
         return result
     except subprocess.TimeoutExpired:
         # Log timeout and re-raise with context (redacted)
-        raise RuntimeError(
-            f"Git command timed out after {timeout}s: git {' '.join(_redact_git_args(args))}"
-        ) from None
+        raise RuntimeError(f"Git command timed out after {timeout}s: git {' '.join(_redact_git_args(args))}") from None
     except FileNotFoundError as e:
         raise GitCommandError(command="git", stderr=str(e), returncode=127) from e
 
@@ -1023,10 +1017,7 @@ def generate_filter_branch_command(files: List[str]) -> str:
     """
     # Properly escape each file path to prevent shell injection
     files_str = " ".join(shlex.quote(f) for f in files)
-    return (
-        f"git filter-branch --force --index-filter "
-        f"'git rm --cached --ignore-unmatch {files_str}' HEAD"
-    )
+    return f"git filter-branch --force --index-filter " f"'git rm --cached --ignore-unmatch {files_str}' HEAD"
 
 
 def get_rotation_command(secret_name: str) -> Optional[str]:
@@ -1101,9 +1092,7 @@ def generate_remediation_steps(
 
     # Step 2: Remove from git history if found in commits
     if timeline.commits_affected:
-        rewrite_cmd, tool_name, tool_warning = generate_history_rewrite_command(
-            timeline.files_affected
-        )
+        rewrite_cmd, tool_name, tool_warning = generate_history_rewrite_command(timeline.files_affected)
         steps.append(
             RemediationStep(
                 order=2,
@@ -1140,8 +1129,7 @@ def generate_remediation_steps(
             order=4,
             title="Update .gitignore",
             description=(
-                "Ensure .env and other secret files are in .gitignore "
-                "to prevent future accidental commits."
+                "Ensure .env and other secret files are in .gitignore " "to prevent future accidental commits."
             ),
             urgency="MEDIUM",
             command="echo '.env\n.env.local' >> .gitignore",

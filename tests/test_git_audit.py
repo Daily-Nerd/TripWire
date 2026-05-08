@@ -312,9 +312,7 @@ class TestSecretSearch:
         """Test that binary files are skipped."""
         # Create a fake binary file with the pattern
         (temp_git_repo / "image.png").write_bytes(b"AWS_SECRET_KEY=test")
-        subprocess.run(
-            ["git", "add", "image.png"], cwd=temp_git_repo, check=True, capture_output=True
-        )
+        subprocess.run(["git", "add", "image.png"], cwd=temp_git_repo, check=True, capture_output=True)
         subprocess.run(
             ["git", "commit", "-m", "Add image"],
             cwd=temp_git_repo,
@@ -896,9 +894,7 @@ class TestErrorHandling:
         """Test find_secret_in_commit skips empty file paths."""
         # Create a commit
         (temp_git_repo / "test.txt").write_text("SECRET=value\n")
-        subprocess.run(
-            ["git", "add", "test.txt"], cwd=temp_git_repo, check=True, capture_output=True
-        )
+        subprocess.run(["git", "add", "test.txt"], cwd=temp_git_repo, check=True, capture_output=True)
         subprocess.run(
             ["git", "commit", "-m", "Add test"],
             cwd=temp_git_repo,
@@ -931,9 +927,7 @@ class TestErrorHandling:
         """Test find_secret_in_commit handles file read errors."""
         # Create a commit
         (temp_git_repo / "test.txt").write_text("SECRET=value\n")
-        subprocess.run(
-            ["git", "add", "test.txt"], cwd=temp_git_repo, check=True, capture_output=True
-        )
+        subprocess.run(["git", "add", "test.txt"], cwd=temp_git_repo, check=True, capture_output=True)
         subprocess.run(
             ["git", "commit", "-m", "Add test"],
             cwd=temp_git_repo,
@@ -1021,9 +1015,7 @@ class TestStreamingAudit:
         # Should still find at least one occurrence
         assert len(occurrences) >= 0
 
-    def test_audit_secret_stream_max_commits_no_spurious_error(
-        self, git_repo_with_secret: Path
-    ) -> None:
+    def test_audit_secret_stream_max_commits_no_spurious_error(self, git_repo_with_secret: Path) -> None:
         """Hitting max_commits triggers the finally `proc.terminate()` path.
 
         Before the fix, the post-finally returncode check treated SIGTERM as a
