@@ -120,6 +120,41 @@ class TestBasicFunctionality:
 
         assert TIMEOUT == 30
 
+    def test_default_value_runs_through_validation_pipeline(self, monkeypatch):
+        """A default that violates declared constraints must NOT slip through.
+
+        Before the fix, defaults were returned without validation, so a
+        statement like ``env.require("PORT", default=99999, max_val=65535)``
+        silently shipped an invalid value at import time. Now the same
+        validation rules that apply to environment values apply to defaults.
+        """
+        env = TripWireV2(auto_load=False, collect_errors=False)
+        monkeypatch.delenv("PORT", raising=False)
+
+        with pytest.raises(ValidationError):
+            env.require("PORT", default=99999, min_val=1, max_val=65535)
+
+    def test_default_value_violating_choices_raises(self, monkeypatch):
+        env = TripWireV2(auto_load=False, collect_errors=False)
+        monkeypatch.delenv("ENVIRONMENT", raising=False)
+
+        with pytest.raises(ValidationError):
+            env.require("ENVIRONMENT", default="staging-typo", choices=["dev", "prod"])
+
+    def test_default_value_violating_format_raises(self, monkeypatch):
+        env = TripWireV2(auto_load=False, collect_errors=False)
+        monkeypatch.delenv("ADMIN_EMAIL", raising=False)
+
+        with pytest.raises(ValidationError):
+            env.require("ADMIN_EMAIL", default="not-an-email", format="email")
+
+    def test_default_value_passing_validation_returns_default(self, monkeypatch):
+        env = TripWireV2(auto_load=False, collect_errors=False)
+        monkeypatch.delenv("PORT", raising=False)
+
+        port = env.require("PORT", default=8000, min_val=1, max_val=65535)
+        assert port == 8000
+
     def test_alias_tripwire_is_v2(self):
         """Test that TripWire is an alias for TripWireV2."""
         assert TripWire is TripWireV2
