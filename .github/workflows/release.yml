@@ -33,7 +33,7 @@ jobs:
       is_prerelease: ${{ steps.version.outputs.is_prerelease }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
           ref: ${{ github.ref }}
@@ -45,7 +45,7 @@ jobs:
           cache: 'pip'
 
       - name: Set up uv (fast installer/lock support)
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@v6
 
       - name: Install dependencies
         # UV in CI: Use --system flag to install into system Python (no venv needed)
@@ -216,13 +216,13 @@ jobs:
       # Force UTF-8 encoding on Windows for proper Unicode handling
       PYTHONIOENCODING: utf-8
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
 
-      - uses: astral-sh/setup-uv@v4
+      - uses: astral-sh/setup-uv@v6
 
       - name: Install dependencies
         # UV in CI: Use --system flag to install into system Python (no venv needed)
@@ -238,14 +238,14 @@ jobs:
     runs-on: ubuntu-latest
     needs: [validate-release, tests]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
           cache: 'pip'
 
-      - uses: astral-sh/setup-uv@v4
+      - uses: astral-sh/setup-uv@v6
 
       - name: Install build tools
         # UV in CI: Use --system flag to install into system Python (no venv needed)
@@ -285,7 +285,7 @@ jobs:
       # Force UTF-8 encoding on Windows for proper Unicode handling
       PYTHONIOENCODING: utf-8
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: actions/download-artifact@v4
         with:
@@ -296,7 +296,7 @@ jobs:
         with:
           python-version: "3.12"
 
-      - uses: astral-sh/setup-uv@v4
+      - uses: astral-sh/setup-uv@v6
 
       - name: Upload to Test PyPI (API token)
         env:
@@ -464,7 +464,7 @@ jobs:
       # Force UTF-8 encoding on Windows for proper Unicode handling
       PYTHONIOENCODING: utf-8
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: actions/download-artifact@v4
         with:
@@ -554,7 +554,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
