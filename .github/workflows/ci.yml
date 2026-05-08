@@ -6,14 +6,23 @@ on:
     paths:
       - "src/**"
       - "tests/**"
+      - "pyproject.toml"
+      - "uv.lock"
+      - ".github/workflows/ci.yml"
   pull_request:
     branches: [ main ]
     paths:
       - "src/**"
       - "tests/**"
+      - "pyproject.toml"
+      - "uv.lock"
+      - ".github/workflows/ci.yml"
 
 env:
   PYTHON_VERSION: "3.11"
+  # Match local dev: every job installs from uv.lock so CI never sees a
+  # tool version that the maintainer has not seen first.
+  UV_LOCKED: "1"
 
 jobs:
   test:
@@ -37,30 +46,23 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
-    - name: Cache pip dependencies
-      uses: actions/cache@v4
+    - name: Set up uv
+      uses: astral-sh/setup-uv@v6
       with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-
+        enable-cache: true
+        cache-dependency-glob: "uv.lock"
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -e ".[dev]"
-        pip install pre-commit
+    - name: Install dependencies (locked)
+      run: uv sync --frozen --all-extras
 
     - name: Run pre-commit hooks (format/lint/static checks)
-      run: |
-        pre-commit run --all-files
+      run: uv run pre-commit run --all-files
 
     - name: Run type checking
-      run: mypy src/tripwire
+      run: uv run mypy src/tripwire
 
     - name: Run tests with coverage
-      run: |
-        pytest --cov=tripwire --cov-report=xml --cov-report=term-missing
+      run: uv run pytest --cov=tripwire --cov-report=xml --cov-report=term-missing
 
     - name: Upload coverage to Codecov
       if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
@@ -72,7 +74,6 @@ jobs:
         fail_ci_if_error: false
         token: ${{ secrets.CODECOV_TOKEN }}
 
-  # NEW: Dedicated CLI validation test job (Phase 2)
   cli-validation:
     name: CLI Validation Tests
     runs-on: ubuntu-latest
@@ -85,20 +86,21 @@ jobs:
       with:
         python-version: "3.12"
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -e ".[dev]"
+    - name: Set up uv
+      uses: astral-sh/setup-uv@v6
+      with:
+        enable-cache: true
+        cache-dependency-glob: "uv.lock"
+
+    - name: Install dependencies (locked)
+      run: uv sync --frozen --all-extras
 
     - name: Run CLI validation test suite
-      run: |
-        pytest tests/test_cli_validation.py -v --tb=short
+      run: uv run pytest tests/test_cli_validation.py -v --tb=short
 
     - name: Display test summary
       if: always()
-      run: |
-        echo "CLI Validation Test Summary:"
-        pytest tests/test_cli_validation.py --collect-only -q
+      run: uv run pytest tests/test_cli_validation.py --collect-only -q
 
   security:
     name: Security Scan (pre-commit)
@@ -112,14 +114,17 @@ jobs:
       with:
         python-version: "3.11"
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -e ".[dev]"
-        pip install pre-commit
+    - name: Set up uv
+      uses: astral-sh/setup-uv@v6
+      with:
+        enable-cache: true
+        cache-dependency-glob: "uv.lock"
+
+    - name: Install dependencies (locked)
+      run: uv sync --frozen --all-extras
 
     - name: Run Bandit via pre-commit
-      run: pre-commit run bandit --all-files || true
+      run: uv run pre-commit run bandit --all-files || true
 
   build:
     name: Build Package
@@ -134,16 +139,14 @@ jobs:
       with:
         python-version: "3.11"
 
-    - name: Install build dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install build twine
+    - name: Set up uv
+      uses: astral-sh/setup-uv@v6
 
-    - name: Build package
-      run: python -m build
+    - name: Build package (sdist + wheel)
+      run: uv build
 
-    - name: Check package
-      run: twine check dist/*
+    - name: Check package metadata
+      run: uvx twine check dist/*
 
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
@@ -175,24 +178,18 @@ jobs:
         python -m pip install --upgrade pip
         pip install dist/*.whl
 
-    # UPDATED: Use validation script (Phase 2 - additional check)
-    - name: Validate CLI using script (additional check)
+    - name: Validate CLI using script
       run: |
         chmod +x .github/scripts/validate_cli.sh
-        # Note: No version check in CI (only on releases)
         ./.github/scripts/validate_cli.sh
 
-    # Keep existing workflow test for completeness
     - name: Test basic functionality
       run: |
-        # Create a test project
         mkdir test_project
         cd test_project
 
-        # Initialize TripWire
         tripwire init --project-type web
 
-        # Create a test Python file
         cat > test_app.py << 'EOF'
         from tripwire import env
 
@@ -201,21 +198,14 @@ jobs:
         PORT = env.optional('PORT', default=8000, type=int)
         EOF
 
-        # Set environment variables
         export API_KEY=test-key-12345
         export DEBUG=true
         export PORT=3000
 
-        # Test the app
         python test_app.py
 
-        # Test generation
         tripwire generate --force
-
-        # Test validation
         tripwire validate
-
-        # Test check command
         tripwire check
 
   performance:
@@ -230,14 +220,17 @@ jobs:
       with:
         python-version: "3.11"
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -e ".[dev]"
+    - name: Set up uv
+      uses: astral-sh/setup-uv@v6
+      with:
+        enable-cache: true
+        cache-dependency-glob: "uv.lock"
+
+    - name: Install dependencies (locked)
+      run: uv sync --frozen --all-extras
 
     - name: Run performance tests
-      run: |
-        python benchmarks/performance.py
+      run: uv run python benchmarks/performance.py
 
   docs:
     name: Build Documentation
@@ -251,17 +244,20 @@ jobs:
       with:
         python-version: "3.11"
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -e ".[dev]"
+    - name: Set up uv
+      uses: astral-sh/setup-uv@v6
+      with:
+        enable-cache: true
+        cache-dependency-glob: "uv.lock"
+
+    - name: Install dependencies (locked)
+      run: uv sync --frozen --all-extras
 
     - name: Generate documentation
       run: |
-        # Test documentation generation
-        tripwire docs --format markdown > docs/generated.md
-        tripwire docs --format html > docs/generated.html
-        tripwire docs --format json > docs/generated.json
+        uv run tripwire docs --format markdown > docs/generated.md
+        uv run tripwire docs --format html > docs/generated.html
+        uv run tripwire docs --format json > docs/generated.json
 
     - name: Upload documentation
       uses: actions/upload-artifact@v4
