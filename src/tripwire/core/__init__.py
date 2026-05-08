@@ -5,10 +5,6 @@ This package contains the refactored core components following SOLID principles:
 - loader: Environment file loading with source abstraction
 - inference: Type inference from annotations using strategy pattern
 - validation_orchestrator: Validation rule chain with Chain of Responsibility pattern
-
-Version 0.9.0+:
-- TripWire and env now use the modern TripWireV2 implementation
-- TripWireLegacy is available for backward compatibility (deprecated)
 """
 
 # Import components from refactored modules

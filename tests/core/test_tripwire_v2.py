@@ -407,22 +407,7 @@ class TestComponentInteraction:
 
 
 class TestBackwardCompatibility:
-    """Test backward compatibility with legacy TripWire."""
-
-    def test_api_compatible_with_legacy(self, monkeypatch):
-        """Ensure API is compatible with legacy TripWire."""
-        from tripwire import TripWireLegacy
-
-        # Both should accept same parameters
-        legacy_env = TripWireLegacy(auto_load=False)
-        modern_env = TripWireV2(auto_load=False)
-
-        monkeypatch.setenv("PORT", "8000")
-
-        legacy_result = legacy_env.require("PORT", type=int)
-        modern_result = modern_env.require("PORT", type=int)
-
-        assert legacy_result == modern_result
+    """Test backward compatibility of the public API."""
 
     def test_module_level_env(self, monkeypatch):
         """Test that module-level env singleton works."""
