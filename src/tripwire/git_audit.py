@@ -245,6 +245,27 @@ def _estimate_occurrence_size(occurrence: FileOccurrence) -> int:
     return size
 
 
+def _redact_git_args(args: List[str]) -> List[str]:
+    """Return a copy of git arg list with sensitive flag values masked.
+
+    Currently masks the value following ``-G`` and ``-S`` (pickaxe flags) and
+    ``--grep``, since those flags carry secret values or fragments thereof
+    when they originate from audit code paths. The redacted form is suitable
+    for embedding in user-visible error messages.
+    """
+    redacted: List[str] = []
+    skip_next = False
+    for arg in args:
+        if skip_next:
+            redacted.append("***")
+            skip_next = False
+            continue
+        redacted.append(arg)
+        if arg in ("-G", "-S", "--grep"):
+            skip_next = True
+    return redacted
+
+
 def run_git_command(
     args: List[str],
     repo_path: Path,
@@ -283,15 +304,17 @@ def run_git_command(
 
         if check and result.returncode != 0:
             raise GitCommandError(
-                command=" ".join(["git"] + args),
+                command=" ".join(["git"] + _redact_git_args(args)),
                 stderr=result.stderr,
                 returncode=result.returncode,
             )
 
         return result
     except subprocess.TimeoutExpired:
-        # Log timeout and re-raise with context
-        raise RuntimeError(f"Git command timed out after {timeout}s: git {' '.join(args)}") from None
+        # Log timeout and re-raise with context (redacted)
+        raise RuntimeError(
+            f"Git command timed out after {timeout}s: git {' '.join(_redact_git_args(args))}"
+        ) from None
     except FileNotFoundError as e:
         raise GitCommandError(command="git", stderr=str(e), returncode=127) from e
 
@@ -617,6 +640,7 @@ def audit_secret_stream(
         text=True,
     )
 
+    terminated_by_us = False
     try:
         count = 0
         for line in proc.stdout:  # type: ignore[union-attr]
@@ -634,8 +658,11 @@ def audit_secret_stream(
             count += 1
 
     finally:
-        # CRITICAL: Terminate process if iteration stopped early
+        # CRITICAL: Terminate process if iteration stopped early.
+        # Track that we initiated the termination so the post-finally returncode
+        # check below does not misread our SIGTERM as a real git failure.
         if proc.poll() is None:  # Still running
+            terminated_by_us = True
             proc.terminate()
             try:
                 proc.wait(timeout=5)
@@ -643,8 +670,10 @@ def audit_secret_stream(
                 proc.kill()
                 proc.wait()
 
-    # Check for errors after completion
-    if proc.returncode and proc.returncode != 0:
+    # Check for errors after completion. A non-zero returncode caused by our
+    # own terminate() (count >= max_commits, or caller closing the generator)
+    # is expected and must not raise.
+    if not terminated_by_us and proc.returncode is not None and proc.returncode > 0:
         stderr = proc.stderr.read() if proc.stderr else ""
         raise GitCommandError(
             command="git log -G",

@@ -17,6 +17,7 @@ from tripwire.git_audit import (
     RemediationStep,
     SecretTimeline,
     _is_valid_git_path,
+    _redact_git_args,
     analyze_secret_history,
     audit_secret_stream,
     check_filter_repo_available,
@@ -156,6 +157,46 @@ class TestGitCommands:
             run_git_command(["invalid-command"], temp_git_repo, check=True)
 
         assert "invalid-command" in str(exc_info.value)
+
+    def test_run_git_command_redacts_pickaxe_secret_in_error(
+        self, temp_git_repo: Path
+    ) -> None:
+        """The -G pickaxe value carries the literal secret. A failing git call
+        must NOT echo it back to the user — that defeats the audit's purpose.
+        """
+        secret_value = "AKIA-FAKE-SECRET-VALUE-1234567890"
+        with pytest.raises(GitCommandError) as exc_info:
+            # Force failure by pointing at a path that is not a git repo within
+            # the args so the command runs but the repo flag is what fails.
+            run_git_command(
+                ["log", "-G", secret_value, "--this-flag-does-not-exist"],
+                temp_git_repo,
+                check=True,
+            )
+
+        # The full error rendering (str + .command + .args of any wrapping
+        # exception) must not contain the raw secret.
+        rendered = str(exc_info.value)
+        assert secret_value not in rendered
+        assert "***" in rendered
+
+    def test_redact_git_args_masks_pickaxe_and_grep(self) -> None:
+        """Redaction helper covers -G, -S, and --grep."""
+        args = ["log", "-G", "secret-G", "-S", "secret-S", "--grep", "secret-grep"]
+        assert _redact_git_args(args) == [
+            "log",
+            "-G",
+            "***",
+            "-S",
+            "***",
+            "--grep",
+            "***",
+        ]
+
+    def test_redact_git_args_passes_innocuous_flags_through(self) -> None:
+        """Non-sensitive flags are unchanged."""
+        args = ["log", "--all", "--format=%H", "main"]
+        assert _redact_git_args(args) == args
 
     def test_check_git_repository_valid(self, temp_git_repo: Path) -> None:
         """Test checking a valid git repository."""
@@ -970,6 +1011,24 @@ class TestStreamingAudit:
 
         # Should still find at least one occurrence
         assert len(occurrences) >= 0
+
+    def test_audit_secret_stream_max_commits_no_spurious_error(
+        self, git_repo_with_secret: Path
+    ) -> None:
+        """Hitting max_commits triggers the finally `proc.terminate()` path.
+
+        Before the fix, the post-finally returncode check treated SIGTERM as a
+        git failure and raised `GitCommandError` to a caller that had asked for
+        a bounded scan. The completed iteration must NOT raise.
+        """
+        # Iterate to completion; should not raise.
+        list(
+            audit_secret_stream(
+                secret_name="AWS_SECRET_KEY",
+                repo_path=git_repo_with_secret,
+                max_commits=1,
+            )
+        )
 
     def test_audit_secret_stream_memory_efficiency(self, git_repo_with_secret: Path) -> None:
         """Test that streaming audit doesn't load all results into memory."""
