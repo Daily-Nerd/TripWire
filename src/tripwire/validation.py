@@ -321,7 +321,7 @@ def coerce_type(value: str, target_type: type[T], variable_name: str) -> T:
     try:
         # Type checking: mypy now correctly infers types from runtime checks
         if target_type is bool:
-            return coerce_bool(value)  # type: ignore[return-value]
+            return coerce_bool(value)
         elif target_type is int:
             return coerce_int(value)  # type: ignore[return-value]
         elif target_type is float:

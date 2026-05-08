@@ -105,14 +105,14 @@ def get_status_icon(state: str = "neutral", colored: bool = True, rich_markup: b
         valid_states = ", ".join(f'"{s}"' for s in _SYMBOLS.keys())
         raise ValueError(f"Invalid state: '{state}'. Must be one of: {valid_states}")
 
-    symbol = _SYMBOLS[state]  # type: ignore[index]  # We validated state above
+    symbol = _SYMBOLS[state]
 
     if not colored:
         return f"━━({symbol})━━"
 
     if rich_markup:
         # Use Rich markup format for console.print()
-        color = _RICH_COLORS[state]  # type: ignore[index]  # We validated state above
+        color = _RICH_COLORS[state]
         return f"━━[{color}]({symbol})[/{color}]━━"
     else:
         # Use ANSI codes for direct print()
