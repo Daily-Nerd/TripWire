@@ -79,8 +79,11 @@ def expand_variables(
             # Keep original reference if not found
             return match.group(0)
 
-    # Recursively expand until no more variables or max depth reached
+    # Recursively expand until no more variables or max depth reached.
+    # `current` is initialized to `previous` so callers passing max_depth=0
+    # get a defined return value instead of UnboundLocalError.
     previous = value
+    current = previous
     for _ in range(max_depth):
         current = re.sub(pattern, replace_var, previous)
         if current == previous:
@@ -170,10 +173,12 @@ class EnvFileParser:
 
             i += 1
 
-        # Apply variable expansion if enabled
+        # Apply variable expansion if enabled.
+        # Rebuild env_dict after each expansion so a chain like A=foo, B=${A}
+        # resolves B against the resolved A, not the pre-expansion snapshot.
         if self.expand_vars:
-            env_dict = {key: entry.value for key, entry in entries.items()}
             for entry in entries.values():
+                env_dict = {key: e.value for key, e in entries.items()}
                 entry.value = expand_variables(
                     entry.value,
                     env_dict,
@@ -289,20 +294,24 @@ class EnvFileParser:
     def _unescape_value(self, value: str) -> str:
         """Process escape sequences in a value.
 
-        Args:
-            value: Value with potential escape sequences
-
-        Returns:
-            Value with escapes processed
+        The escape sequences are processed in a single pass over the string
+        so that `\\\\n` (literal backslash + n) round-trips correctly. Doing
+        sequential `replace` calls processes `\\n` first and turns the second
+        backslash plus n into a newline before `\\\\` ever runs.
         """
-        # Handle common escape sequences
-        value = value.replace("\\n", "\n")
-        value = value.replace("\\r", "\r")
-        value = value.replace("\\t", "\t")
-        value = value.replace('\\"', '"')
-        value = value.replace("\\\\", "\\")
-
-        return value
+        result: List[str] = []
+        i = 0
+        n = len(value)
+        escapes = {"n": "\n", "r": "\r", "t": "\t", '"': '"', "\\": "\\"}
+        while i < n:
+            ch = value[i]
+            if ch == "\\" and i + 1 < n and value[i + 1] in escapes:
+                result.append(escapes[value[i + 1]])
+                i += 2
+            else:
+                result.append(ch)
+                i += 1
+        return "".join(result)
 
 
 def parse_env_file(file_path: Path) -> Dict[str, str]:
