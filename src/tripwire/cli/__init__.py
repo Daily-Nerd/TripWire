@@ -5,6 +5,7 @@ This module provides the main CLI entry point and command registration.
 
 import click
 
+from tripwire import __version__
 from tripwire.branding import LOGO_SIMPLE
 
 # Import all commands
@@ -37,7 +38,7 @@ from tripwire.cli.utils import print_help_with_banner
     callback=print_help_with_banner,
     help="Show this message and exit.",
 )
-@click.version_option(version="0.13.1", prog_name="tripwire", message=f"{LOGO_SIMPLE}\nVersion: %(version)s")
+@click.version_option(version=__version__, prog_name="tripwire", message=f"{LOGO_SIMPLE}\nVersion: %(version)s")
 def main() -> None:
     """TripWire - Catch config errors before they explode.
 

@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-05-07
+
+### Removed
+
+- **BREAKING: `TripWireLegacy` and the `_core_legacy` module have been removed.** The legacy implementation was deprecated in v0.9.0 (Oct 2025) and emitted a `DeprecationWarning` on every import. The modern `TripWireV2` implementation has been the default since v0.9.0 and is API-compatible with the legacy class for the documented public surface.
+  - **Migration**: `from tripwire import TripWireLegacy` → `from tripwire import TripWire` (or `TripWireV2`). All public method signatures (`require`, `optional`, `auto_load`, etc.) are preserved.
+  - **Why**: Eliminates the deprecation-warning noise that fired on every `from tripwire import env`. Aligns the package with its own promise that v1.0.0 would remove the legacy frame-walking implementation.
+
+### Changed
+
+- **Project status classifier flipped from `Development Status :: 3 - Alpha` to `Development Status :: 5 - Production/Stable`** (`pyproject.toml`). The library has been API-stable since v0.9.0, has 73%+ test coverage on core modules, ships a multi-OS × multi-Python CI matrix, and powers production use cases. The Alpha classifier no longer reflects reality.
+
+### Notes
+
+- This release is the first formal commitment to Semantic Versioning under a `1.x` line. From here on, breaking changes require a major version bump.
+- No new features ship with this release. v1.0.0 is a stability and trust release: it is the version of TripWire that the README has been describing all along.
+
 ## [0.13.1] - 2025-11-03
 
 ### Changed
