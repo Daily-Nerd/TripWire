@@ -108,9 +108,13 @@ jobs:
             exit 1
           fi
 
-          # Check cli/__init__.py version using Python for more reliable parsing (v0.7.0+ modular structure)
-          CLI_VERSION=$(python3 -c "import re; content=open('src/tripwire/cli/__init__.py').read(); match=re.search(r'@click\.version_option\(version=\"([^\"]+)\"', content); print(match.group(1) if match else '')")
-          if [ "$VERSION" != "$CLI_VERSION" ]; then
+          # Check cli/__init__.py version. v1.0.0+ sources from `__version__`, so a
+          # reference is acceptable (validated transitively via __init__.py above).
+          # Otherwise expect a literal string and match it against the tag.
+          CLI_VERSION=$(python3 -c "import re; content=open('src/tripwire/cli/__init__.py').read(); m=re.search(r'@click\.version_option\(version=([^,)]+)', content); raw=(m.group(1).strip() if m else ''); print('__DYNAMIC__' if raw and not raw.startswith('\"') else (raw.strip('\"') if raw else ''))")
+          if [ "$CLI_VERSION" = "__DYNAMIC__" ]; then
+            echo "✓ cli/__init__.py sources version dynamically (validated via __init__.py)"
+          elif [ "$VERSION" != "$CLI_VERSION" ]; then
             echo "::error::Version mismatch: tag=$VERSION but cli/__init__.py=$CLI_VERSION"
             exit 1
           fi
