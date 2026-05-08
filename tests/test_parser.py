@@ -8,6 +8,7 @@ import pytest
 from tripwire.parser import (
     EnvFileParser,
     compare_env_files,
+    expand_variables,
     format_env_file,
     merge_env_files,
     needs_quoting,
@@ -375,3 +376,50 @@ CONNECTION_STRING=Server=localhost;User=admin
 
     # Should split on FIRST equals only
     assert entries["CONNECTION_STRING"].value == "Server=localhost;User=admin"
+
+
+# Regression tests for parser correctness audit (May 2026)
+
+
+def test_expand_variables_max_depth_zero_does_not_crash():
+    """expand_variables with max_depth=0 returned UnboundLocalError before the fix."""
+    result = expand_variables("hello ${X}", {"X": "world"}, max_depth=0)
+    # With zero iterations no expansion happens; the original string is returned.
+    assert result == "hello ${X}"
+
+
+def test_expand_variables_chain_resolves_through_intermediate():
+    """A=foo, B=${A}, C=${B} should all resolve to foo when expand_variables runs over the dict."""
+    parser = EnvFileParser(expand_vars=True, allow_os_environ=False)
+    content = "A=foo\nB=${A}\nC=${B}\n"
+    entries = parser.parse_string(content)
+    assert entries["A"].value == "foo"
+    assert entries["B"].value == "foo"
+    assert entries["C"].value == "foo"
+
+
+def test_unescape_value_preserves_literal_backslash_n():
+    r"""`"\\n"` (literal backslash + n) must round-trip, not become a newline.
+
+    Before the fix, sequential `replace` calls processed `\n` first and turned
+    the second backslash plus n into a newline before `\\` ever ran.
+    """
+    parser = EnvFileParser()
+    # In .env: KEY="\\n"   →   value should be the two characters "\" + "n"
+    entries = parser.parse_string('KEY="\\\\n"\n')
+    assert entries["KEY"].value == "\\n"
+
+
+def test_unescape_value_processes_real_newline_escape():
+    """`"\\n"` (backslash + n in source) is the escape for a newline."""
+    parser = EnvFileParser()
+    entries = parser.parse_string('KEY="line1\\nline2"\n')
+    assert entries["KEY"].value == "line1\nline2"
+
+
+def test_unescape_value_preserves_unknown_escape():
+    r"""Unknown escapes like `\z` should pass through untouched (no silent loss)."""
+    parser = EnvFileParser()
+    entries = parser.parse_string('KEY="C:\\path\\zfile"\n')
+    # `\p` and `\z` are not recognized escapes; backslashes survive.
+    assert entries["KEY"].value == "C:\\path\\zfile"
