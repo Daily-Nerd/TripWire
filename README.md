@@ -11,9 +11,11 @@
 ╚══════════════════════════╝
 ```
 
-**Smart Environment Variable Management for Python**
+**Schema-Driven Environment Variable Management for Python**
 
-> Catch missing/invalid environment variables at import time (not runtime) with type validation, secret detection, and git history auditing.
+> Generate a TOML schema from your code, keep `.env` / `.env.example` / Python in lockstep, and catch missing or invalid environment variables at import time — not in production. Bundled with secret detection (45+ patterns) and git-history auditing for leaked secrets.
+
+> **Stable since v1.0.0** — `Development Status :: 5 - Production/Stable`. Public API is locked under SemVer; breaking changes require a major version bump.
 
 [![CI](https://github.com/Daily-Nerd/TripWire/actions/workflows/ci.yml/badge.svg)](https://github.com/Daily-Nerd/TripWire/actions/workflows/ci.yml)
 [![Security](https://github.com/Daily-Nerd/TripWire/actions/workflows/security.yml/badge.svg)](https://github.com/Daily-Nerd/TripWire/actions/workflows/security.yml)
@@ -365,9 +367,9 @@ app.config['SECRET_KEY'] = SECRET_KEY
 
 ---
 
-## Configuration as Code
+## The Schema-Driven Workflow
 
-Define environment variables declaratively using TOML schemas (v0.3.0+).
+This is what TripWire is *for*. The `env.require()` API is the runtime tip; the schema lifecycle is the iceberg. One TOML file is the source of truth — your code, your `.env`, your `.env.example`, and your CI all read from it.
 
 ```toml
 # .tripwire.toml
@@ -393,28 +395,40 @@ max = 65535
 strict_secrets = true
 ```
 
-```bash
-# Validate against schema
-tripwire schema validate --environment production
+The schema commands form a directional pipeline — `from-*` ingests, `to-*` exports:
 
-# Generate .env.example from schema
+```bash
+# Bootstrap a schema from existing code (scans env.require() calls)
+tripwire schema from-code
+
+# Or bootstrap from an existing .env.example
+tripwire schema from-example
+
+# Export an .env.example from schema (committable, reviewable)
 tripwire schema to-example
 
-# Migrate legacy .env.example to schema (v0.4.1+)
-tripwire schema from-example
+# Generate environment-specific .env files
+tripwire schema to-env --environment production
+
+# Render Markdown / HTML docs from schema
+tripwire schema to-docs
+
+# Validate any .env against the schema (use in CI)
+tripwire schema validate --environment production
+
+# Check for drift between schema, code, and .env
+tripwire schema check
 ```
 
-[Learn more about Configuration as Code →](docs/guides/configuration-as-code.md)
+[Configuration as Code guide →](docs/guides/configuration-as-code.md)
 
 ---
 
-## Plugin System
+## Extending TripWire (Plugin System)
 
-Extend TripWire with cloud secret managers and custom environment sources (v0.10.0+).
+For teams that pull configuration from external secret stores, TripWire ships an extension point. The bundled plugins are stable but not the headline of the project — most users never need them.
 
-### Official Plugins
-
-TripWire includes 4 production-ready plugins for major cloud providers:
+### Bundled Plugins
 
 ```bash
 # Install plugins from official registry
@@ -580,38 +594,27 @@ TripWire builds on the excellent work of the Python community, particularly:
 
 ---
 
-## Development Roadmap
+## What's In Scope (and What Isn't)
 
-### Implemented Features ✅
+**TripWire is a Python library, not a platform.** Its job is to make environment-variable management bulletproof for a Python codebase. Anything that requires a server, a hosted dashboard, or a paid tier lives outside that scope until adoption signals demand otherwise.
 
-- [x] Environment variable loading
-- [x] Import-time validation
-- [x] Type coercion (str, int, bool, float, list, dict)
-- [x] **Type inference from annotations** (v0.4.0)
-- [x] Format validators (email, url, uuid, ipv4, postgresql)
-- [x] Custom validators
-- [x] .env.example generation from code
-- [x] Drift detection and team sync
-- [x] **Configuration comparison** (diff command - v0.4.0)
-- [x] Multi-environment support
-- [x] **Unified config abstraction** (.env + TOML - v0.4.0)
-- [x] Secret detection (45+ platform patterns)
-- [x] **Git audit with timeline and remediation** (audit command)
-- [x] **Configuration as Code** (TOML schemas - v0.3.0)
-- [x] **Tool configuration** (`[tool.tripwire]` - v0.4.1)
-- [x] **Schema migration** (schema from-example - v0.4.1)
-- [x] **Plugin system** (v0.10.0) - Vault, AWS, Azure, Remote HTTP
-- [x] **Modern architecture** (TripWireV2 - v0.9.0) - 22% faster
-- [x] **Advanced validators** (v0.10.1) - URL components, DateTime validation
-- [x] **VS Code extension** - Diagnostics, autocomplete, git audit integration ([Marketplace](https://marketplace.visualstudio.com/items?itemName=Daily-Nerd.tripwire))
+**In scope — actively maintained:**
 
-### Planned Features 📋
-- [ ] PyCharm plugin
-- [ ] Encrypted .env files
-- [ ] Web UI for team env management
-- [ ] Environment variable versioning
-- [ ] Compliance reports (SOC2, HIPAA)
-- [ ] Additional plugins (GCP Secret Manager, 1Password, Bitwarden)
+- Import-time validation, type inference, format validators
+- The schema lifecycle (`from-code`, `from-example`, `to-example`, `to-env`, `to-docs`, `validate`, `check`)
+- Secret detection (45+ patterns) and git-history auditing
+- Static analysis (`tripwire analyze usage` / `deadcode` / `dependencies`)
+- Plugin extension point + the four bundled cloud plugins (Vault, AWS, Azure, Remote HTTP)
+- VS Code extension (separate repository)
+
+**Not in scope — won't ship without strong external demand:**
+
+- Hosted Web UI / SaaS dashboard
+- Encrypted `.env` file format
+- Compliance reporting (SOC2, HIPAA)
+- Additional cloud-secret plugins beyond the bundled four
+
+If you have a strong use case for one of the "not in scope" items, [open an issue](https://github.com/Daily-Nerd/TripWire/issues) — repeated, specific demand is what moves these into scope.
 
 ---
 
