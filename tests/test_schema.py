@@ -778,9 +778,7 @@ PORT=8080
         # Development environment provides DATABASE_URL, so only API_KEY is missing
         assert "API_KEY" in result.output
 
-    def test_cli_schema_validate_strict_flag(
-        self, sample_schema_toml: Path, tmp_path: Path
-    ) -> None:
+    def test_cli_schema_validate_strict_flag(self, sample_schema_toml: Path, tmp_path: Path) -> None:
         """Test 'schema validate' --strict flag exits with error code."""
         runner = CliRunner()
 
@@ -844,9 +842,7 @@ PORT=8080
         # Output should contain project name and variable info
         assert "test-project" in result.output or "Environment Variables" in result.output
 
-    def test_cli_schema_validate_environment_flag(
-        self, sample_schema_toml: Path, tmp_path: Path
-    ) -> None:
+    def test_cli_schema_validate_environment_flag(self, sample_schema_toml: Path, tmp_path: Path) -> None:
         """Test 'schema validate' --environment flag uses correct defaults."""
         runner = CliRunner()
 
@@ -995,9 +991,7 @@ class TestEnvGenerationForEnvironments:
     def test_generate_env_for_development(self, sample_schema_toml: Path) -> None:
         """Test generating .env file for development environment."""
         schema = TripWireSchema.from_toml(sample_schema_toml)
-        env_content, needs_input = schema.generate_env_for_environment(
-            "development", interactive=False
-        )
+        env_content, needs_input = schema.generate_env_for_environment("development", interactive=False)
 
         # Should contain environment header
         assert "Environment: development" in env_content
@@ -1016,9 +1010,7 @@ class TestEnvGenerationForEnvironments:
     def test_generate_env_for_production(self, sample_schema_toml: Path) -> None:
         """Test generating .env file for production environment."""
         schema = TripWireSchema.from_toml(sample_schema_toml)
-        env_content, needs_input = schema.generate_env_for_environment(
-            "production", interactive=False
-        )
+        env_content, needs_input = schema.generate_env_for_environment("production", interactive=False)
 
         # Should use production defaults
         assert "DEBUG=false" in env_content
@@ -1032,9 +1024,7 @@ class TestEnvGenerationForEnvironments:
     def test_generate_env_interactive_mode(self, sample_schema_toml: Path) -> None:
         """Test generating .env with interactive mode enabled."""
         schema = TripWireSchema.from_toml(sample_schema_toml)
-        env_content, needs_input = schema.generate_env_for_environment(
-            "production", interactive=True
-        )
+        env_content, needs_input = schema.generate_env_for_environment("production", interactive=True)
 
         # Interactive mode uses PROMPT_ME instead of CHANGE_ME_SECRET_VALUE
         assert "PROMPT_ME" in env_content
@@ -1115,9 +1105,7 @@ class TestCLISchemaGenerateEnv:
         assert "Environment: development" in content
         assert "DATABASE_URL=" in content
 
-    def test_generate_env_command_production(
-        self, sample_schema_toml: Path, tmp_path: Path
-    ) -> None:
+    def test_generate_env_command_production(self, sample_schema_toml: Path, tmp_path: Path) -> None:
         """Test generating production .env with secrets placeholders."""
         runner = CliRunner()
         output_file = tmp_path / ".env.prod"
@@ -1143,9 +1131,7 @@ class TestCLISchemaGenerateEnv:
         assert "CHANGE_ME_SECRET_VALUE" in content
         assert "Variables requiring manual input" in result.output
 
-    def test_generate_env_command_overwrite_protection(
-        self, sample_schema_toml: Path, tmp_path: Path
-    ) -> None:
+    def test_generate_env_command_overwrite_protection(self, sample_schema_toml: Path, tmp_path: Path) -> None:
         """Test to-env protects against overwriting existing files."""
         runner = CliRunner()
         output_file = tmp_path / ".env.dev"
@@ -1172,9 +1158,7 @@ class TestCLISchemaGenerateEnv:
         # Original content preserved
         assert output_file.read_text() == "EXISTING=value\n"
 
-    def test_generate_env_command_force_overwrite(
-        self, sample_schema_toml: Path, tmp_path: Path
-    ) -> None:
+    def test_generate_env_command_force_overwrite(self, sample_schema_toml: Path, tmp_path: Path) -> None:
         """Test to-env with --overwrite flag."""
         runner = CliRunner()
         output_file = tmp_path / ".env.dev"
@@ -1201,9 +1185,7 @@ class TestCLISchemaGenerateEnv:
         assert "EXISTING=value" not in content
         assert "Environment: development" in content
 
-    def test_generate_env_command_json_format(
-        self, sample_schema_toml: Path, tmp_path: Path
-    ) -> None:
+    def test_generate_env_command_json_format(self, sample_schema_toml: Path, tmp_path: Path) -> None:
         """Test to-env with JSON output format."""
         runner = CliRunner()
         output_file = tmp_path / ".env.json"
@@ -1234,12 +1216,8 @@ class TestCLISchemaGenerateEnv:
         assert isinstance(data, dict)
         assert "DATABASE_URL" in data
 
-    @pytest.mark.skip(
-        reason="YAML format may require yaml library - testing if basic formats work first"
-    )
-    def test_generate_env_command_yaml_format(
-        self, sample_schema_toml: Path, tmp_path: Path
-    ) -> None:
+    @pytest.mark.skip(reason="YAML format may require yaml library - testing if basic formats work first")
+    def test_generate_env_command_yaml_format(self, sample_schema_toml: Path, tmp_path: Path) -> None:
         """Test generate-env with YAML output format."""
         runner = CliRunner()
         output_file = tmp_path / ".env.yaml"

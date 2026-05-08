@@ -221,9 +221,7 @@ class TripWireSchema:
             schema.strict = validation.get("strict", True)
             schema.allow_missing_optional = validation.get("allow_missing_optional", True)
             # Use None as sentinel to avoid injecting phantom fields when unset
-            schema.warn_unused = (
-                validation.get("warn_unused", None) if "warn_unused" in validation else None
-            )
+            schema.warn_unused = validation.get("warn_unused", None) if "warn_unused" in validation else None
 
         # Parse security settings
         if "security" in data:
@@ -258,9 +256,7 @@ class TripWireSchema:
 
         return schema
 
-    def validate_env(
-        self, env_dict: Dict[str, str], environment: str = "development"
-    ) -> Tuple[bool, List[str]]:
+    def validate_env(self, env_dict: Dict[str, str], environment: str = "development") -> Tuple[bool, List[str]]:
         """
         Validate environment variables against schema.
 
@@ -372,12 +368,8 @@ class TripWireSchema:
         needs_input = []
 
         # Group by required/optional
-        required_vars = sorted(
-            [v for v in self.variables.values() if v.required], key=lambda v: v.name
-        )
-        optional_vars = sorted(
-            [v for v in self.variables.values() if not v.required], key=lambda v: v.name
-        )
+        required_vars = sorted([v for v in self.variables.values() if v.required], key=lambda v: v.name)
+        optional_vars = sorted([v for v in self.variables.values() if not v.required], key=lambda v: v.name)
 
         if required_vars:
             lines.append("# Required Variables")
@@ -1144,11 +1136,7 @@ def _inject_toml_comments(
         # Inject comments after variable's last field (before empty line or next section)
         elif current_variable and current_variable in comments_map:
             # Check if next line is empty or starts a new section
-            is_last_field = (
-                i + 1 >= len(lines)
-                or lines[i + 1].strip() == ""
-                or lines[i + 1].strip().startswith("[")
-            )
+            is_last_field = i + 1 >= len(lines) or lines[i + 1].strip() == "" or lines[i + 1].strip().startswith("[")
 
             if is_last_field:
                 # Inject comments before the empty line/next section
@@ -1300,9 +1288,7 @@ def _write_variable_with_comments(
 
     if var_schema.examples:
         # Apply escaping to each example string
-        formatted_examples = (
-            "[" + ", ".join(f'"{_escape_toml_string(ex)}"' for ex in var_schema.examples) + "]"
-        )
+        formatted_examples = "[" + ", ".join(f'"{_escape_toml_string(ex)}"' for ex in var_schema.examples) + "]"
         buffer.write(f"examples = {formatted_examples}\n")
 
     if var_schema.format:
@@ -1314,11 +1300,7 @@ def _write_variable_with_comments(
 
     if var_schema.choices:
         # Apply escaping to each choice string
-        formatted_choices = (
-            "["
-            + ", ".join(f'"{_escape_toml_string(choice)}"' for choice in var_schema.choices)
-            + "]"
-        )
+        formatted_choices = "[" + ", ".join(f'"{_escape_toml_string(choice)}"' for choice in var_schema.choices) + "]"
         buffer.write(f"choices = {formatted_choices}\n")
 
     if var_schema.min is not None:
