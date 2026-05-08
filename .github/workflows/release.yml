@@ -47,23 +47,19 @@ jobs:
       - name: Set up uv (fast installer/lock support)
         uses: astral-sh/setup-uv@v6
 
-      - name: Install dependencies
-        # UV in CI: Use --system flag to install into system Python (no venv needed)
-        # This is simpler and more reliable than creating/activating virtual environments
-        run: |
-          uv pip install --system -e ".[dev]" packaging
+      - name: Install dependencies (locked)
+        # uv sync honors uv.lock so CI uses the same versions as local dev.
+        # Prevents tool-version drift (e.g. mypy 1.x vs 2.x) between machines.
+        run: uv sync --frozen --all-extras
 
       - name: Run pre-commit
-        # pre-commit manages its own environments, so uv run is acceptable here
         run: uv run pre-commit run --all-files
 
       - name: Extract & classify version (PEP 440)
         id: version
         shell: bash
-        # Using direct command (installed via --system) rather than uv run
-        # CI environments are already isolated, no need for additional ephemeral envs
         run: |
-          python - <<'PY'
+          uv run python - <<'PY'
           import os, sys
           from packaging.version import Version, InvalidVersion
 
@@ -131,16 +127,11 @@ jobs:
           fi
 
       - name: Run tests with coverage
-        # Using direct command (installed via --system) rather than uv run
-        # CI environments are already isolated, no need for additional ephemeral envs
-        run: |
-          pytest --cov=tripwire --cov-report=xml --cov-report=term
+        run: uv run pytest --cov=tripwire --cov-report=xml --cov-report=term
 
       - name: Check coverage threshold (75%)
-        # Using direct command (installed via --system) rather than uv run
-        # CI environments are already isolated, no need for additional ephemeral envs
         run: |
-          python - <<'PY'
+          uv run python - <<'PY'
           import sys
           import xml.etree.ElementTree as ET
 
@@ -159,21 +150,14 @@ jobs:
           PY
 
       - name: Run type checking
-        # Using direct command (installed via --system) rather than uv run
-        # CI environments are already isolated, no need for additional ephemeral envs
-        run: mypy src/tripwire
+        run: uv run mypy src/tripwire
 
       - name: Security scan with bandit
-        # Using direct command (installed via --system) rather than uv run
-        # CI environments are already isolated, no need for additional ephemeral envs
-        run: bandit -r src/tripwire -ll
+        run: uv run bandit -r src/tripwire -ll
 
       - name: Scan for secrets in codebase
-        # Using direct command (installed via --system) rather than uv run
-        # CI environments are already isolated, no need for additional ephemeral envs
         run: |
-          # Use tripwire's own secret scanner
-          python - <<'PY'
+          uv run python - <<'PY'
           import sys
           from pathlib import Path
           from tripwire.secrets import scan_env_file
@@ -191,10 +175,8 @@ jobs:
           PY
 
       - name: Dependency vulnerability scan
-        # Using direct command (installed via --system) rather than uv run
-        # CI environments are already isolated, no need for additional ephemeral envs
         # Note: Ignoring pip vulnerabilities (CI-only tool, not shipped with package)
-        run: pip-audit --skip-editable || true
+        run: uv run pip-audit --skip-editable || true
 
       - name: Validate CHANGELOG.md
         # Skip pre-release changelog check for prereleases
@@ -224,14 +206,11 @@ jobs:
 
       - uses: astral-sh/setup-uv@v6
 
-      - name: Install dependencies
-        # UV in CI: Use --system flag to install into system Python (no venv needed)
-        run: uv pip install --system -e ".[dev]"
+      - name: Install dependencies (locked)
+        run: uv sync --frozen --all-extras
 
       - name: Run tests
-        # Using direct command (installed via --system) rather than uv run
-        # CI environments are already isolated, no need for additional ephemeral envs
-        run: pytest -v
+        run: uv run pytest -v
 
   build-package:
     name: Build Package
@@ -247,19 +226,11 @@ jobs:
 
       - uses: astral-sh/setup-uv@v6
 
-      - name: Install build tools
-        # UV in CI: Use --system flag to install into system Python (no venv needed)
-        run: uv pip install --system build twine
-
       - name: Build package (sdist + wheel)
-        # Using direct command (installed via --system) rather than uv run
-        # CI environments are already isolated, no need for additional ephemeral envs
-        run: python -m build
+        run: uv build
 
       - name: Check package metadata
-        # Using direct command (installed via --system) rather than uv run
-        # CI environments are already isolated, no need for additional ephemeral envs
-        run: twine check dist/*
+        run: uvx twine check dist/*
 
       - name: Verify package contents
         run: |
@@ -303,12 +274,7 @@ jobs:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.TEST_PYPI_API_TOKEN }}
           TWINE_REPOSITORY_URL: ${{ env.TEST_PYPI_INDEX_URL }}
-        run: |
-          # UV in CI: Use --system flag to install into system Python (no venv needed)
-          uv pip install --system twine
-          # Using direct command (installed via --system) rather than uv run
-          # CI environments are already isolated, no need for additional ephemeral envs
-          twine upload --skip-existing dist/*
+        run: uvx twine upload --skip-existing dist/*
 
       - name: Wait for Test PyPI propagation
         run: sleep 10
