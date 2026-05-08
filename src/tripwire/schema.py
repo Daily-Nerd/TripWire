@@ -61,14 +61,18 @@ class VariableSchema:
                 if not self._validate_format(value):
                     return False, f"Invalid format: {self.format}"
 
-            # Pattern validation
-            if self.pattern and not re.match(self.pattern, value):
+            # Pattern validation. Use re.fullmatch so the pattern must match
+            # the entire string. re.match only anchors at the start, which
+            # let `\d{4}` accept "1234garbage".
+            if self.pattern and not re.fullmatch(self.pattern, value):
                 return False, f"Does not match pattern: {self.pattern}"
 
-            # Length validation
-            if self.min_length and len(value) < self.min_length:
+            # Length validation. Use `is not None` because min_length=0 is a
+            # legitimate constraint (e.g., explicitly allow empty values) and
+            # was previously skipped by the truthiness check.
+            if self.min_length is not None and len(value) < self.min_length:
                 return False, f"Minimum length is {self.min_length}"
-            if self.max_length and len(value) > self.max_length:
+            if self.max_length is not None and len(value) > self.max_length:
                 return False, f"Maximum length is {self.max_length}"
 
         elif self.type == "int":
@@ -116,9 +120,14 @@ class VariableSchema:
         else:
             return False, f"Unknown type: {self.type}"
 
-        # Choices validation
-        if self.choices and value not in self.choices:
-            return False, f"Must be one of: {', '.join(self.choices)}"
+        # Choices validation. Compare on string form so that a TOML schema
+        # like `choices = [80, 443]` (parsed as ints) still matches a value
+        # of "80" coming from a .env file. Without this normalisation, choices
+        # only worked for type=string.
+        if self.choices:
+            choice_strs = [str(c) for c in self.choices]
+            if str(value) not in choice_strs:
+                return False, f"Must be one of: {', '.join(choice_strs)}"
 
         return True, None
 
