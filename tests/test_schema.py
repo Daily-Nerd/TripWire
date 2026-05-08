@@ -362,6 +362,21 @@ class TestVariablePatternValidation:
         assert is_valid is False
         assert "Does not match pattern" in error
 
+    def test_pattern_anchors_full_string(self) -> None:
+        """re.match only anchors at start; the validator must use fullmatch.
+
+        Before the fix, `pattern = r"\\d{4}"` accepted "1234garbage" because
+        `re.match` matched the leading "1234" and ignored the rest.
+        """
+        var = VariableSchema(name="CODE", type="string", pattern=r"\d{4}")
+
+        is_valid, error = var.validate("1234")
+        assert is_valid is True
+
+        is_valid, error = var.validate("1234garbage")
+        assert is_valid is False
+        assert "Does not match pattern" in error
+
 
 class TestVariableChoicesValidation:
     """Tests for choices/enum validation."""
@@ -376,6 +391,22 @@ class TestVariableChoicesValidation:
 
         # Invalid choice
         is_valid, error = var.validate("invalid")
+        assert is_valid is False
+        assert "Must be one of" in error
+
+    def test_variable_choices_validation_for_int_type(self) -> None:
+        """Choices on int variables compared against the value's string form.
+
+        TOML may parse `choices = [80, 443, 8080]` as a list of ints, while
+        the value coming from a .env file is the string "80". The validator
+        normalises both sides so a value matches its declared choice.
+        """
+        var = VariableSchema(name="PORT", type="int", choices=[80, 443, 8080])  # type: ignore[arg-type]
+
+        is_valid, _ = var.validate("80")
+        assert is_valid is True
+
+        is_valid, error = var.validate("22")
         assert is_valid is False
         assert "Must be one of" in error
 
@@ -414,6 +445,22 @@ class TestVariableRangeValidation:
 
 class TestVariableLengthValidation:
     """Tests for string length validation."""
+
+    def test_min_length_zero_is_enforced(self) -> None:
+        """`min_length=0` is a legal constraint and must run.
+
+        The previous truthiness check (`if self.min_length`) treated 0 as
+        falsy and skipped the validation entirely. With `is not None` the
+        rule fires; the only string that fails a min_length=0 check is None,
+        which gets caught by the type check earlier.
+        """
+        var = VariableSchema(name="OPTIONAL_NOTE", type="string", min_length=0, max_length=5)
+        is_valid, _ = var.validate("")
+        assert is_valid is True
+
+        is_valid, error = var.validate("toolong")
+        assert is_valid is False
+        assert "Maximum length is 5" in error
 
     def test_variable_length_validation(self) -> None:
         """Test min_length and max_length validation."""
@@ -693,7 +740,14 @@ PORT=8080
 
         result = runner.invoke(
             main,
-            ["schema", "validate", "--env-file", str(env_file), "--schema-file", str(sample_schema_toml)],
+            [
+                "schema",
+                "validate",
+                "--env-file",
+                str(env_file),
+                "--schema-file",
+                str(sample_schema_toml),
+            ],
         )
 
         assert result.exit_code == 0
@@ -709,7 +763,14 @@ PORT=8080
 
         result = runner.invoke(
             main,
-            ["schema", "validate", "--env-file", str(env_file), "--schema-file", str(sample_schema_toml)],
+            [
+                "schema",
+                "validate",
+                "--env-file",
+                str(env_file),
+                "--schema-file",
+                str(sample_schema_toml),
+            ],
         )
 
         # Should succeed but show errors (exit_code 0 without --strict)
@@ -717,7 +778,9 @@ PORT=8080
         # Development environment provides DATABASE_URL, so only API_KEY is missing
         assert "API_KEY" in result.output
 
-    def test_cli_schema_validate_strict_flag(self, sample_schema_toml: Path, tmp_path: Path) -> None:
+    def test_cli_schema_validate_strict_flag(
+        self, sample_schema_toml: Path, tmp_path: Path
+    ) -> None:
         """Test 'schema validate' --strict flag exits with error code."""
         runner = CliRunner()
 
@@ -781,7 +844,9 @@ PORT=8080
         # Output should contain project name and variable info
         assert "test-project" in result.output or "Environment Variables" in result.output
 
-    def test_cli_schema_validate_environment_flag(self, sample_schema_toml: Path, tmp_path: Path) -> None:
+    def test_cli_schema_validate_environment_flag(
+        self, sample_schema_toml: Path, tmp_path: Path
+    ) -> None:
         """Test 'schema validate' --environment flag uses correct defaults."""
         runner = CliRunner()
 
@@ -930,7 +995,9 @@ class TestEnvGenerationForEnvironments:
     def test_generate_env_for_development(self, sample_schema_toml: Path) -> None:
         """Test generating .env file for development environment."""
         schema = TripWireSchema.from_toml(sample_schema_toml)
-        env_content, needs_input = schema.generate_env_for_environment("development", interactive=False)
+        env_content, needs_input = schema.generate_env_for_environment(
+            "development", interactive=False
+        )
 
         # Should contain environment header
         assert "Environment: development" in env_content
@@ -949,7 +1016,9 @@ class TestEnvGenerationForEnvironments:
     def test_generate_env_for_production(self, sample_schema_toml: Path) -> None:
         """Test generating .env file for production environment."""
         schema = TripWireSchema.from_toml(sample_schema_toml)
-        env_content, needs_input = schema.generate_env_for_environment("production", interactive=False)
+        env_content, needs_input = schema.generate_env_for_environment(
+            "production", interactive=False
+        )
 
         # Should use production defaults
         assert "DEBUG=false" in env_content
@@ -963,7 +1032,9 @@ class TestEnvGenerationForEnvironments:
     def test_generate_env_interactive_mode(self, sample_schema_toml: Path) -> None:
         """Test generating .env with interactive mode enabled."""
         schema = TripWireSchema.from_toml(sample_schema_toml)
-        env_content, needs_input = schema.generate_env_for_environment("production", interactive=True)
+        env_content, needs_input = schema.generate_env_for_environment(
+            "production", interactive=True
+        )
 
         # Interactive mode uses PROMPT_ME instead of CHANGE_ME_SECRET_VALUE
         assert "PROMPT_ME" in env_content
@@ -1044,7 +1115,9 @@ class TestCLISchemaGenerateEnv:
         assert "Environment: development" in content
         assert "DATABASE_URL=" in content
 
-    def test_generate_env_command_production(self, sample_schema_toml: Path, tmp_path: Path) -> None:
+    def test_generate_env_command_production(
+        self, sample_schema_toml: Path, tmp_path: Path
+    ) -> None:
         """Test generating production .env with secrets placeholders."""
         runner = CliRunner()
         output_file = tmp_path / ".env.prod"
@@ -1070,7 +1143,9 @@ class TestCLISchemaGenerateEnv:
         assert "CHANGE_ME_SECRET_VALUE" in content
         assert "Variables requiring manual input" in result.output
 
-    def test_generate_env_command_overwrite_protection(self, sample_schema_toml: Path, tmp_path: Path) -> None:
+    def test_generate_env_command_overwrite_protection(
+        self, sample_schema_toml: Path, tmp_path: Path
+    ) -> None:
         """Test to-env protects against overwriting existing files."""
         runner = CliRunner()
         output_file = tmp_path / ".env.dev"
@@ -1097,7 +1172,9 @@ class TestCLISchemaGenerateEnv:
         # Original content preserved
         assert output_file.read_text() == "EXISTING=value\n"
 
-    def test_generate_env_command_force_overwrite(self, sample_schema_toml: Path, tmp_path: Path) -> None:
+    def test_generate_env_command_force_overwrite(
+        self, sample_schema_toml: Path, tmp_path: Path
+    ) -> None:
         """Test to-env with --overwrite flag."""
         runner = CliRunner()
         output_file = tmp_path / ".env.dev"
@@ -1124,7 +1201,9 @@ class TestCLISchemaGenerateEnv:
         assert "EXISTING=value" not in content
         assert "Environment: development" in content
 
-    def test_generate_env_command_json_format(self, sample_schema_toml: Path, tmp_path: Path) -> None:
+    def test_generate_env_command_json_format(
+        self, sample_schema_toml: Path, tmp_path: Path
+    ) -> None:
         """Test to-env with JSON output format."""
         runner = CliRunner()
         output_file = tmp_path / ".env.json"
@@ -1155,8 +1234,12 @@ class TestCLISchemaGenerateEnv:
         assert isinstance(data, dict)
         assert "DATABASE_URL" in data
 
-    @pytest.mark.skip(reason="YAML format may require yaml library - testing if basic formats work first")
-    def test_generate_env_command_yaml_format(self, sample_schema_toml: Path, tmp_path: Path) -> None:
+    @pytest.mark.skip(
+        reason="YAML format may require yaml library - testing if basic formats work first"
+    )
+    def test_generate_env_command_yaml_format(
+        self, sample_schema_toml: Path, tmp_path: Path
+    ) -> None:
         """Test generate-env with YAML output format."""
         runner = CliRunner()
         output_file = tmp_path / ".env.yaml"

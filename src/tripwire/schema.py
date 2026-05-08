@@ -61,14 +61,18 @@ class VariableSchema:
                 if not self._validate_format(value):
                     return False, f"Invalid format: {self.format}"
 
-            # Pattern validation
-            if self.pattern and not re.match(self.pattern, value):
+            # Pattern validation. Use re.fullmatch so the pattern must match
+            # the entire string. re.match only anchors at the start, which
+            # let `\d{4}` accept "1234garbage".
+            if self.pattern and not re.fullmatch(self.pattern, value):
                 return False, f"Does not match pattern: {self.pattern}"
 
-            # Length validation
-            if self.min_length and len(value) < self.min_length:
+            # Length validation. Use `is not None` because min_length=0 is a
+            # legitimate constraint (e.g., explicitly allow empty values) and
+            # was previously skipped by the truthiness check.
+            if self.min_length is not None and len(value) < self.min_length:
                 return False, f"Minimum length is {self.min_length}"
-            if self.max_length and len(value) > self.max_length:
+            if self.max_length is not None and len(value) > self.max_length:
                 return False, f"Maximum length is {self.max_length}"
 
         elif self.type == "int":
@@ -116,9 +120,14 @@ class VariableSchema:
         else:
             return False, f"Unknown type: {self.type}"
 
-        # Choices validation
-        if self.choices and value not in self.choices:
-            return False, f"Must be one of: {', '.join(self.choices)}"
+        # Choices validation. Compare on string form so that a TOML schema
+        # like `choices = [80, 443]` (parsed as ints) still matches a value
+        # of "80" coming from a .env file. Without this normalisation, choices
+        # only worked for type=string.
+        if self.choices:
+            choice_strs = [str(c) for c in self.choices]
+            if str(value) not in choice_strs:
+                return False, f"Must be one of: {', '.join(choice_strs)}"
 
         return True, None
 
@@ -212,7 +221,9 @@ class TripWireSchema:
             schema.strict = validation.get("strict", True)
             schema.allow_missing_optional = validation.get("allow_missing_optional", True)
             # Use None as sentinel to avoid injecting phantom fields when unset
-            schema.warn_unused = validation.get("warn_unused", None) if "warn_unused" in validation else None
+            schema.warn_unused = (
+                validation.get("warn_unused", None) if "warn_unused" in validation else None
+            )
 
         # Parse security settings
         if "security" in data:
@@ -247,7 +258,9 @@ class TripWireSchema:
 
         return schema
 
-    def validate_env(self, env_dict: Dict[str, str], environment: str = "development") -> Tuple[bool, List[str]]:
+    def validate_env(
+        self, env_dict: Dict[str, str], environment: str = "development"
+    ) -> Tuple[bool, List[str]]:
         """
         Validate environment variables against schema.
 
@@ -359,8 +372,12 @@ class TripWireSchema:
         needs_input = []
 
         # Group by required/optional
-        required_vars = sorted([v for v in self.variables.values() if v.required], key=lambda v: v.name)
-        optional_vars = sorted([v for v in self.variables.values() if not v.required], key=lambda v: v.name)
+        required_vars = sorted(
+            [v for v in self.variables.values() if v.required], key=lambda v: v.name
+        )
+        optional_vars = sorted(
+            [v for v in self.variables.values() if not v.required], key=lambda v: v.name
+        )
 
         if required_vars:
             lines.append("# Required Variables")
@@ -1127,7 +1144,11 @@ def _inject_toml_comments(
         # Inject comments after variable's last field (before empty line or next section)
         elif current_variable and current_variable in comments_map:
             # Check if next line is empty or starts a new section
-            is_last_field = i + 1 >= len(lines) or lines[i + 1].strip() == "" or lines[i + 1].strip().startswith("[")
+            is_last_field = (
+                i + 1 >= len(lines)
+                or lines[i + 1].strip() == ""
+                or lines[i + 1].strip().startswith("[")
+            )
 
             if is_last_field:
                 # Inject comments before the empty line/next section
@@ -1279,7 +1300,9 @@ def _write_variable_with_comments(
 
     if var_schema.examples:
         # Apply escaping to each example string
-        formatted_examples = "[" + ", ".join(f'"{_escape_toml_string(ex)}"' for ex in var_schema.examples) + "]"
+        formatted_examples = (
+            "[" + ", ".join(f'"{_escape_toml_string(ex)}"' for ex in var_schema.examples) + "]"
+        )
         buffer.write(f"examples = {formatted_examples}\n")
 
     if var_schema.format:
@@ -1291,7 +1314,11 @@ def _write_variable_with_comments(
 
     if var_schema.choices:
         # Apply escaping to each choice string
-        formatted_choices = "[" + ", ".join(f'"{_escape_toml_string(choice)}"' for choice in var_schema.choices) + "]"
+        formatted_choices = (
+            "["
+            + ", ".join(f'"{_escape_toml_string(choice)}"' for choice in var_schema.choices)
+            + "]"
+        )
         buffer.write(f"choices = {formatted_choices}\n")
 
     if var_schema.min is not None:
