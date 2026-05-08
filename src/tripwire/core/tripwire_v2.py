@@ -346,6 +346,38 @@ class TripWireV2:
         raw_value = os.getenv(name)
         if raw_value is None:
             if default is not None:
+                # Validate the default itself. Skipping this lets bugs like
+                # `default="not-a-number"` with `min_val=1` ship silently.
+                # The default is already a Python value of the inferred type
+                # per the signature, so coercion is a no-op; only the
+                # validation rules (format/pattern/choices/min/max/length/
+                # validator) need to run.
+                default_orchestrator = self._build_validation_pipeline(
+                    format=format,
+                    pattern=pattern,
+                    choices=choices,
+                    min_val=min_val,
+                    max_val=max_val,
+                    min_length=min_length,
+                    max_length=max_length,
+                    validator=validator,
+                    error_message=error_message,
+                )
+                default_context = ValidationContext(
+                    name=name,
+                    raw_value=str(default),
+                    coerced_value=default,
+                    expected_type=inferred_type,
+                )
+                if self.collect_errors:
+                    default_orchestrator.collect_errors = True
+                    default_orchestrator.validate(default_context)
+                    if default_orchestrator.has_errors():
+                        with self._error_lock:
+                            self._validation_errors.extend(default_orchestrator.get_collected_errors())
+                else:
+                    # Fail-fast: an invalid default raises immediately.
+                    default_orchestrator.validate(default_context)
                 return default
 
             # Handle missing variable based on error collection mode
