@@ -318,9 +318,7 @@ class TestValidation:
         env = TripWireV2(auto_load=False)
         monkeypatch.setenv("EMAIL", "test@example.com")
 
-        EMAIL: str = env.require(
-            "EMAIL", format="email", min_length=5, max_length=100, pattern=r".*@example\.com$"
-        )
+        EMAIL: str = env.require("EMAIL", format="email", min_length=5, max_length=100, pattern=r".*@example\.com$")
 
         assert EMAIL == "test@example.com"
 

@@ -374,9 +374,7 @@ class TripWireV2:
                     default_orchestrator.validate(default_context)
                     if default_orchestrator.has_errors():
                         with self._error_lock:
-                            self._validation_errors.extend(
-                                default_orchestrator.get_collected_errors()
-                            )
+                            self._validation_errors.extend(default_orchestrator.get_collected_errors())
                 else:
                     # Fail-fast: an invalid default raises immediately.
                     default_orchestrator.validate(default_context)
@@ -566,9 +564,7 @@ class TripWireV2:
             >>> env = TripWireV2(auto_load=False)
             >>> env.load_files([".env", ".env.local", ".env.production"])
         """
-        sources: List[EnvSource] = [
-            DotenvFileSource(Path(p), override=override) for p in file_paths
-        ]
+        sources: List[EnvSource] = [DotenvFileSource(Path(p), override=override) for p in file_paths]
         temp_loader = EnvFileLoader(sources, strict=self.strict)
         temp_loader.load_all()
 
