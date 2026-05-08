@@ -158,9 +158,7 @@ class TestGitCommands:
 
         assert "invalid-command" in str(exc_info.value)
 
-    def test_run_git_command_redacts_pickaxe_secret_in_error(
-        self, temp_git_repo: Path
-    ) -> None:
+    def test_run_git_command_redacts_pickaxe_secret_in_error(self, temp_git_repo: Path) -> None:
         """The -G pickaxe value carries the literal secret. A failing git call
         must NOT echo it back to the user — that defeats the audit's purpose.
         """
@@ -314,7 +312,9 @@ class TestSecretSearch:
         """Test that binary files are skipped."""
         # Create a fake binary file with the pattern
         (temp_git_repo / "image.png").write_bytes(b"AWS_SECRET_KEY=test")
-        subprocess.run(["git", "add", "image.png"], cwd=temp_git_repo, check=True, capture_output=True)
+        subprocess.run(
+            ["git", "add", "image.png"], cwd=temp_git_repo, check=True, capture_output=True
+        )
         subprocess.run(
             ["git", "commit", "-m", "Add image"],
             cwd=temp_git_repo,
@@ -781,7 +781,12 @@ class TestIntegration:
         config_file = git_repo_with_secret / "config.py"
         config_file.write_text("# Empty config\n")
 
-        subprocess.run(["git", "add", ".env", "config.py"], cwd=git_repo_with_secret, check=True, capture_output=True)
+        subprocess.run(
+            ["git", "add", ".env", "config.py"],
+            cwd=git_repo_with_secret,
+            check=True,
+            capture_output=True,
+        )
         subprocess.run(
             ["git", "commit", "-m", "Remove secret from all files"],
             cwd=git_repo_with_secret,
@@ -891,7 +896,9 @@ class TestErrorHandling:
         """Test find_secret_in_commit skips empty file paths."""
         # Create a commit
         (temp_git_repo / "test.txt").write_text("SECRET=value\n")
-        subprocess.run(["git", "add", "test.txt"], cwd=temp_git_repo, check=True, capture_output=True)
+        subprocess.run(
+            ["git", "add", "test.txt"], cwd=temp_git_repo, check=True, capture_output=True
+        )
         subprocess.run(
             ["git", "commit", "-m", "Add test"],
             cwd=temp_git_repo,
@@ -924,7 +931,9 @@ class TestErrorHandling:
         """Test find_secret_in_commit handles file read errors."""
         # Create a commit
         (temp_git_repo / "test.txt").write_text("SECRET=value\n")
-        subprocess.run(["git", "add", "test.txt"], cwd=temp_git_repo, check=True, capture_output=True)
+        subprocess.run(
+            ["git", "add", "test.txt"], cwd=temp_git_repo, check=True, capture_output=True
+        )
         subprocess.run(
             ["git", "commit", "-m", "Add test"],
             cwd=temp_git_repo,
