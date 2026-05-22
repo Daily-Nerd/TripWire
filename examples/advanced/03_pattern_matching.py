@@ -50,9 +50,9 @@ def main():
 
         print("✅ Pattern validation successful!")
         print(f"   API_KEY: {API_KEY}")
-        print(f"      └─ Matches pattern: sk_(test|live)_[a-zA-Z0-9]{{12,}}")
+        print("      └─ Matches pattern: sk_(test|live)_[a-zA-Z0-9]{12,}")
         print(f"   VERSION: {VERSION}")
-        print(f"      └─ Matches pattern: X.Y.Z (semantic versioning)")
+        print("      └─ Matches pattern: X.Y.Z (semantic versioning)")
         print("\n💡 Try setting VERSION=1.2 to see validation fail!")
 
         return API_KEY, VERSION

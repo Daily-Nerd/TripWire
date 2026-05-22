@@ -30,7 +30,7 @@ def main():
 
     # This silently returns None - no error yet!
     PORT = os.getenv("PORT")
-    print(f"✅ PORT = os.getenv('PORT') succeeded")
+    print("✅ PORT = os.getenv('PORT') succeeded")
     print(f"   PORT value: {PORT}")
     print(f"   Type: {type(PORT).__name__}")
     print("\n⚠️  No error yet, but PORT is None!")
