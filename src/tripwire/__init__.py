@@ -14,6 +14,8 @@ Advanced usage:
     >>> db_url = custom_env.require("DATABASE_URL", format="postgresql")
 """
 
+from importlib.metadata import PackageNotFoundError, version
+
 from tripwire.core import TripWire, TripWireV2, env
 from tripwire.exceptions import (
     DriftError,
@@ -26,7 +28,10 @@ from tripwire.exceptions import (
 )
 from tripwire.validation import validator
 
-__version__ = "1.0.0"
+try:
+    __version__ = version("tripwire-py")
+except PackageNotFoundError:  # pragma: no cover - source tree fallback before installation
+    __version__ = "0+unknown"
 
 __all__ = [
     "TripWire",
