@@ -32,7 +32,7 @@ def main():
     # Common mistake - this is always True!
     DEBUG = os.getenv("DEBUG")
     if DEBUG:
-        print(f"❌ WRONG: if DEBUG is True!")
+        print("❌ WRONG: if DEBUG is True!")
         print(f"   DEBUG value: '{DEBUG}'")
         print(f"   Type: {type(DEBUG).__name__}")
         print(f"   bool(DEBUG): {bool(DEBUG)}")
@@ -51,7 +51,7 @@ def main():
 
     env = TripWire(collect_errors=False)
     DEBUG_TRIPWIRE: bool = env.require("DEBUG")
-    print(f"DEBUG: bool = env.require('DEBUG')")
+    print("DEBUG: bool = env.require('DEBUG')")
     print(f"Result: {DEBUG_TRIPWIRE} (type: {type(DEBUG_TRIPWIRE).__name__})")
     print("\n✅ TripWire handles boolean parsing correctly!")
     print("   'false', 'False', '0', 'no' → False")

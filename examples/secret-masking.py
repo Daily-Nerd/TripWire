@@ -306,7 +306,7 @@ print("=" * 70)
 try:
     # Simulate error with secret in message
     raise ValueError(f"Authentication failed with token: {github_token.get_secret_value()}")
-except ValueError as e:
+except ValueError:
     # ✅ GOOD: Exception is logged with redaction
     logger.exception("✅ Error occurred (secrets in traceback are redacted)")
     print("✅ Exception logged - check logs to verify redaction")

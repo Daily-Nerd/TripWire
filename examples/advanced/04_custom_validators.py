@@ -85,9 +85,9 @@ def main():
 
         print("✅ Custom validation successful!")
         print(f"   USERNAME: {USERNAME}")
-        print(f"      └─ Custom validator: 3-20 chars, alphanumeric, starts with letter")
+        print("      └─ Custom validator: 3-20 chars, alphanumeric, starts with letter")
         print(f"   WEBHOOK_URL: {WEBHOOK_URL}")
-        print(f"      └─ Custom validator: HTTPS, contains 'webhook'")
+        print("      └─ Custom validator: HTTPS, contains 'webhook'")
         print("\n💡 Custom validators are reusable throughout your application!")
 
         return USERNAME, WEBHOOK_URL

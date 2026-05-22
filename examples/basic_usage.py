@@ -186,7 +186,7 @@ def main() -> None:
     print(f"ENVIRONMENT: {ENVIRONMENT}")
     print(f"API_TOKEN: {API_TOKEN[:10]}... (truncated)")
     print(f"S3_BUCKET: {S3_BUCKET}")
-    print(f"SECRET_KEY: ****** (hidden)")
+    print("SECRET_KEY: ****** (hidden)")
     print(f"TIMEOUT: {TIMEOUT}s")
     print("=" * 50)
     print("All environment variables loaded and validated successfully!")

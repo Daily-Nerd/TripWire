@@ -93,7 +93,7 @@ def main():
     print(f"   ALLOWED_HOSTS: {ALLOWED_HOSTS}")
     print(f"   TIME_ZONE: {TIME_ZONE}")
     print(f"   LANGUAGE_CODE: {LANGUAGE_CODE}")
-    print(f"\n   Security Settings:")
+    print("\n   Security Settings:")
     print(f"      SECURE_SSL_REDIRECT: {SECURE_SSL_REDIRECT}")
     print(f"      SESSION_COOKIE_SECURE: {SESSION_COOKIE_SECURE}")
     print(f"      CSRF_COOKIE_SECURE: {CSRF_COOKIE_SECURE}")

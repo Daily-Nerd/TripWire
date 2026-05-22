@@ -6,11 +6,11 @@ the execution time of various TripWire operations.
 
 import os
 import time
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable, Dict, List, Tuple
 
 from tripwire import env
-from tripwire.config import load_config, parse_config
+from tripwire.config import parse_config
 from tripwire.parser import EnvFileParser, expand_variables
 from tripwire.validation import (
     coerce_dict,
@@ -21,7 +21,7 @@ from tripwire.validation import (
 )
 
 
-def benchmark(func: Callable[[], None], iterations: int = 1000) -> Dict[str, float]:
+def benchmark(func: Callable[[], None], iterations: int = 1000) -> dict[str, float]:
     """Benchmark a function execution.
 
     Args:
@@ -59,7 +59,7 @@ def benchmark(func: Callable[[], None], iterations: int = 1000) -> Dict[str, flo
     }
 
 
-def benchmark_env_require() -> Dict[str, float]:
+def benchmark_env_require() -> dict[str, float]:
     """Benchmark env.require() with type coercion."""
     os.environ["BENCH_VAR"] = "42"
 
@@ -71,7 +71,7 @@ def benchmark_env_require() -> Dict[str, float]:
     return result
 
 
-def benchmark_env_require_validation() -> Dict[str, float]:
+def benchmark_env_require_validation() -> dict[str, float]:
     """Benchmark env.require() with format validation."""
     os.environ["BENCH_EMAIL"] = "test@example.com"
 
@@ -83,7 +83,7 @@ def benchmark_env_require_validation() -> Dict[str, float]:
     return result
 
 
-def benchmark_env_optional() -> Dict[str, float]:
+def benchmark_env_optional() -> dict[str, float]:
     """Benchmark env.optional() with default value."""
 
     def test():
@@ -92,7 +92,7 @@ def benchmark_env_optional() -> Dict[str, float]:
     return benchmark(test, iterations=10000)
 
 
-def benchmark_parser_simple() -> Dict[str, float]:
+def benchmark_parser_simple() -> dict[str, float]:
     """Benchmark simple .env parsing."""
     content = """
 # Database configuration
@@ -117,7 +117,7 @@ LOG_LEVEL=info
     return benchmark(test, iterations=1000)
 
 
-def benchmark_parser_with_interpolation() -> Dict[str, float]:
+def benchmark_parser_with_interpolation() -> dict[str, float]:
     """Benchmark parsing with variable interpolation."""
     content = """
 BASE_URL=https://api.example.com
@@ -136,7 +136,7 @@ COMMENTS_ENDPOINT=${API_V2}/comments
     return benchmark(test, iterations=1000)
 
 
-def benchmark_variable_expansion() -> Dict[str, float]:
+def benchmark_variable_expansion() -> dict[str, float]:
     """Benchmark variable expansion function."""
     env_dict = {
         "HOST": "localhost",
@@ -151,7 +151,7 @@ def benchmark_variable_expansion() -> Dict[str, float]:
     return benchmark(test, iterations=10000)
 
 
-def benchmark_coerce_list_simple() -> Dict[str, float]:
+def benchmark_coerce_list_simple() -> dict[str, float]:
     """Benchmark simple list coercion."""
     value = "item1, item2, item3, item4, item5"
 
@@ -161,7 +161,7 @@ def benchmark_coerce_list_simple() -> Dict[str, float]:
     return benchmark(test, iterations=10000)
 
 
-def benchmark_coerce_list_json() -> Dict[str, float]:
+def benchmark_coerce_list_json() -> dict[str, float]:
     """Benchmark JSON list coercion."""
     value = '["item1", "item2", "item3", "item4", "item5"]'
 
@@ -171,7 +171,7 @@ def benchmark_coerce_list_json() -> Dict[str, float]:
     return benchmark(test, iterations=10000)
 
 
-def benchmark_coerce_list_quoted() -> Dict[str, float]:
+def benchmark_coerce_list_quoted() -> dict[str, float]:
     """Benchmark quoted CSV list coercion."""
     value = '"item 1", "item 2", "item 3", "item 4", "item 5"'
 
@@ -181,7 +181,7 @@ def benchmark_coerce_list_quoted() -> Dict[str, float]:
     return benchmark(test, iterations=10000)
 
 
-def benchmark_coerce_dict_json() -> Dict[str, float]:
+def benchmark_coerce_dict_json() -> dict[str, float]:
     """Benchmark JSON dict coercion."""
     value = '{"key1": "value1", "key2": "value2", "key3": "value3"}'
 
@@ -191,7 +191,7 @@ def benchmark_coerce_dict_json() -> Dict[str, float]:
     return benchmark(test, iterations=10000)
 
 
-def benchmark_coerce_dict_keyvalue() -> Dict[str, float]:
+def benchmark_coerce_dict_keyvalue() -> dict[str, float]:
     """Benchmark key=value dict coercion."""
     value = "key1=value1,key2=value2,key3=value3"
 
@@ -201,7 +201,7 @@ def benchmark_coerce_dict_keyvalue() -> Dict[str, float]:
     return benchmark(test, iterations=10000)
 
 
-def benchmark_email_validation() -> Dict[str, float]:
+def benchmark_email_validation() -> dict[str, float]:
     """Benchmark email validation."""
     value = "user@example.com"
 
@@ -211,7 +211,7 @@ def benchmark_email_validation() -> Dict[str, float]:
     return benchmark(test, iterations=10000)
 
 
-def benchmark_url_validation() -> Dict[str, float]:
+def benchmark_url_validation() -> dict[str, float]:
     """Benchmark URL validation."""
     value = "https://www.example.com/path?query=value"
 
@@ -221,7 +221,7 @@ def benchmark_url_validation() -> Dict[str, float]:
     return benchmark(test, iterations=10000)
 
 
-def benchmark_custom_validator_registration() -> Dict[str, float]:
+def benchmark_custom_validator_registration() -> dict[str, float]:
     """Benchmark custom validator registration."""
 
     def validate_test(value: str) -> bool:
@@ -236,7 +236,7 @@ def benchmark_custom_validator_registration() -> Dict[str, float]:
     return benchmark(test, iterations=100)
 
 
-def benchmark_config_parsing() -> Dict[str, float]:
+def benchmark_config_parsing() -> dict[str, float]:
     """Benchmark configuration parsing."""
     config_data = {
         "tripwire": {
@@ -259,7 +259,7 @@ def benchmark_config_parsing() -> Dict[str, float]:
     return benchmark(test, iterations=1000)
 
 
-def run_all_benchmarks() -> List[Tuple[str, Dict[str, float]]]:
+def run_all_benchmarks() -> list[tuple[str, dict[str, float]]]:
     """Run all benchmarks and return results.
 
     Returns:
@@ -293,7 +293,7 @@ def run_all_benchmarks() -> List[Tuple[str, Dict[str, float]]]:
     return results
 
 
-def print_results(results: List[Tuple[str, Dict[str, float]]]) -> None:
+def print_results(results: list[tuple[str, dict[str, float]]]) -> None:
     """Print benchmark results in a formatted table.
 
     Args:
