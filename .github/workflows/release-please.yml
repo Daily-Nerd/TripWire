@@ -28,11 +28,5 @@ jobs:
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
 
-  tripwire-release:
-    needs: release-please
-    if: ${{ needs.release-please.outputs.release_created == 'true' }}
-    uses: ./.github/workflows/release.yml
-    with:
-      version: ${{ needs.release-please.outputs.tag_name }}
-    secrets:
-      TEST_PYPI_API_TOKEN: ${{ secrets.TEST_PYPI_API_TOKEN }}
+  # release-please creates the release PR and tags/GitHub release on merge.
+  # Publishing is handled by .github/workflows/release.yml on the resulting v* tag.
