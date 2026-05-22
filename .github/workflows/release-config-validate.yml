@@ -1,0 +1,48 @@
+name: Release Config Validate
+
+on:
+  push:
+    branches: [ main, feature/* ]
+    paths:
+      - ".github/workflows/release-config-validate.yml"
+      - ".github/workflows/release.yml"
+      - ".github/workflows/release-please.yml"
+      - ".github/scripts/validate_release_config.py"
+      - "release-please-config.json"
+      - ".release-please-manifest.json"
+      - "docs/RELEASING.md"
+  pull_request:
+    branches: [ main ]
+    paths:
+      - ".github/workflows/release-config-validate.yml"
+      - ".github/workflows/release.yml"
+      - ".github/workflows/release-please.yml"
+      - ".github/scripts/validate_release_config.py"
+      - "release-please-config.json"
+      - ".release-please-manifest.json"
+      - "docs/RELEASING.md"
+
+jobs:
+  validate:
+    name: Validate Release Configuration
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Install dependencies (locked)
+        run: uv sync --frozen --all-extras
+
+      - name: Validate release configuration
+        run: uv run python .github/scripts/validate_release_config.py
