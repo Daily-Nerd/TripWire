@@ -122,14 +122,28 @@ jobs:
 
           echo "✓ Version $VERSION is consistent across all files"
 
-      # Only block duplicate version when manually dispatching (tag push already contains the tag)
-      - name: Guard duplicate tag (dispatch only)
-        if: github.event_name == 'workflow_dispatch'
+      - name: Resolve release tag
+        id: release_tag
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          if git rev-parse "v$VERSION" >/dev/null 2>&1; then
-            echo "Tag v$VERSION already exists"; exit 1
+          TAG="v$VERSION"
+
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            if git rev-parse "$TAG" >/dev/null 2>&1; then
+              TAG_SHA=$(git rev-list -n 1 "$TAG")
+              HEAD_SHA=$(git rev-parse HEAD)
+              if [ "$TAG_SHA" != "$HEAD_SHA" ]; then
+                echo "::warning::Tag $TAG exists at $TAG_SHA, while this manual run is building $HEAD_SHA."
+                echo "::warning::Continuing so an existing Release Please tag can be published after a workflow-only fix."
+              else
+                echo "✓ Reusing existing tag $TAG on the current commit"
+              fi
+            else
+              echo "✓ Tag $TAG does not exist yet; the release job will create it"
+            fi
           fi
+
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
 
       - name: Run tests with coverage
         run: uv run pytest --cov=tripwire --cov-report=xml --cov-report=term
@@ -487,9 +501,10 @@ jobs:
           body_path: RELEASE_NOTES.md
           draft: false
           prerelease: ${{ needs.validate-release.outputs.is_prerelease }}
+          fail_on_unmatched_files: true
           files: |
-            dist/tripwire-${{ needs.validate-release.outputs.version }}-py3-none-any.whl
-            dist/tripwire-${{ needs.validate-release.outputs.version }}.tar.gz
+            dist/*.whl
+            dist/*.tar.gz
 
   notify:
     name: Notify Release
