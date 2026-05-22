@@ -5,6 +5,25 @@ All notable changes to TripWire will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1](https://github.com/Daily-Nerd/TripWire/compare/v1.0.0...v1.0.1) (2026-05-22)
+
+
+### Bug Fixes
+
+* **build:** drop force-include directive, ship JSON via include pattern ([3edd31f](https://github.com/Daily-Nerd/TripWire/commit/3edd31f71c43487c6b58d6dc71d07c0dee7114e2))
+* **core:** validate the default value, not just the environment value ([683201c](https://github.com/Daily-Nerd/TripWire/commit/683201c4e1ac703103a19d6a32ad17bc8b30fc34))
+* correct release-please workflow_call version expression ([bb85bc3](https://github.com/Daily-Nerd/TripWire/commit/bb85bc3cd9bb554a9b1394dfdcb320d1fd966f75))
+* **git_audit:** redact pickaxe secret in errors, drop spurious raise on stream early-exit ([bc214ac](https://github.com/Daily-Nerd/TripWire/commit/bc214ac9080d9fea955bd13f3d66042e424a45d1))
+* grant id-token permission to release-please caller workflow ([d356340](https://github.com/Daily-Nerd/TripWire/commit/d3563400f231d0845227a57e30ef92eae2ad4385))
+* **parser:** three correctness bugs surfaced by audit ([da68bc9](https://github.com/Daily-Nerd/TripWire/commit/da68bc97ac29d056a626f5e37a6d63648d9474ca))
+* **schema:** three correctness bugs in VariableSchema.validate() ([cf5795a](https://github.com/Daily-Nerd/TripWire/commit/cf5795a9bd675dd85d67b57b8a337b89bcf5aca5))
+* use release-please manifest for versions only ([#76](https://github.com/Daily-Nerd/TripWire/issues/76)) ([4a96ac1](https://github.com/Daily-Nerd/TripWire/commit/4a96ac1c5aab26f947401380eb8a511358cf9b49))
+
+
+### Documentation
+
+* **readme:** reposition as schema-driven library, drop platform aspirations ([e34087d](https://github.com/Daily-Nerd/TripWire/commit/e34087d62873f1c288fc4fa622488cade035cf46))
+
 ## [Unreleased]
 
 ## [1.0.0] - 2026-05-07
