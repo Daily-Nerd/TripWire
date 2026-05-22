@@ -1,7 +1,3 @@
 {
-  ".": {
-    "changelog-path": "CHANGELOG.md",
-    "release-type": "python",
-    "component": "tripwire-py"
-  }
+  ".": "1.0.0"
 }
