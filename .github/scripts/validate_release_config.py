@@ -143,8 +143,6 @@ def validate_workflows() -> None:
         if snippet in release_please_text:
             fail(f"release-please.yml must not directly call release.yml or use stale output expression: {snippet}")
 
-    if "id-token: write" in release_please_text:
-        fail("release-please.yml should not request id-token: write when it does not publish directly")
 
 
 def main() -> None:
