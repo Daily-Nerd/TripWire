@@ -5,6 +5,16 @@ All notable changes to TripWire will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.2](https://github.com/Daily-Nerd/TripWire/compare/v1.0.1...v1.0.2) (2026-05-22)
+
+
+### Bug Fixes
+
+* allow manual release runs for existing release-please tags ([5709de9](https://github.com/Daily-Nerd/TripWire/commit/5709de98b60c550ad3caae10291d560806c0654a))
+* create TestPyPI verification environment before import checks ([89cdc88](https://github.com/Daily-Nerd/TripWire/commit/89cdc889a3c1be32928419b02eba990207a5598e))
+* derive __version__ from package metadata for release-please compatibility ([#78](https://github.com/Daily-Nerd/TripWire/issues/78)) ([4488fc9](https://github.com/Daily-Nerd/TripWire/commit/4488fc90b8241e18428bbc38aaa57508371c075b))
+* let tag-triggered release workflow handle publishing after release-please ([5feb84a](https://github.com/Daily-Nerd/TripWire/commit/5feb84ada3472d4223905f3d3c50171b856bba8c))
+
 ## [1.0.1](https://github.com/Daily-Nerd/TripWire/compare/v1.0.0...v1.0.1) (2026-05-22)
 
 
