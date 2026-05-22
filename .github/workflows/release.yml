@@ -298,6 +298,31 @@ jobs:
           TWINE_REPOSITORY_URL: ${{ env.TEST_PYPI_INDEX_URL }}
         run: uvx twine upload --skip-existing dist/*
 
+      - name: Install from Test PyPI in clean environment
+        run: |
+          VERSION="${{ needs.validate-release.outputs.version }}"
+          rm -rf .venv_test
+          python -m venv .venv_test
+          . .venv_test/bin/activate
+          python -m pip install -U pip
+
+          # Test PyPI propagation can lag briefly after upload; retry with backoff.
+          for i in {1..6}; do
+            if python -m pip install \
+              --index-url https://test.pypi.org/simple/ \
+              --extra-index-url https://pypi.org/simple/ \
+              "tripwire-py==$VERSION"; then
+              echo "✓ Installed tripwire-py==$VERSION from Test PyPI"
+              break
+            fi
+            if [ "$i" = "6" ]; then
+              echo "::error::Failed to install tripwire-py==$VERSION from Test PyPI"
+              exit 1
+            fi
+            echo "Retry $i/6 after Test PyPI sync..."
+            sleep $((10 * i))
+          done
+
       - name: Verify Python imports
         # Using the test venv created above to verify the installed package
         run: |
