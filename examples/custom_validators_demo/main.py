@@ -18,17 +18,6 @@ This will validate example environment variables using custom format validators.
 import os
 
 # Import custom validators - this registers them at import-time
-from custom_validators import (
-    validate_aws_region,
-    validate_base64,
-    validate_domain,
-    validate_hex_color,
-    validate_phone_number,
-    validate_semver,
-    validate_username,
-    validate_zip_code,
-)
-
 from tripwire import env
 
 if __name__ == "__main__":

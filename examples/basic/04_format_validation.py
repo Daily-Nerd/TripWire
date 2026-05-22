@@ -53,11 +53,11 @@ def main():
 
         print("✅ Format validation successful!")
         print(f"   DATABASE_URL: {DATABASE_URL}")
-        print(f"      └─ Validated as PostgreSQL URL")
+        print("      └─ Validated as PostgreSQL URL")
         print(f"   API_URL: {API_URL}")
-        print(f"      └─ Validated as valid URL")
+        print("      └─ Validated as valid URL")
         print(f"   ADMIN_EMAIL: {ADMIN_EMAIL}")
-        print(f"      └─ Validated as email address")
+        print("      └─ Validated as email address")
         print("\n💡 Available formats: postgresql, mysql, url, email, uuid, ipv4")
 
         return DATABASE_URL, API_URL, ADMIN_EMAIL

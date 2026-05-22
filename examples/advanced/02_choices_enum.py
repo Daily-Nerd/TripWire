@@ -50,9 +50,9 @@ def main():
 
         print("✅ Choices validation successful!")
         print(f"   LOG_LEVEL: {LOG_LEVEL}")
-        print(f"      └─ Must be one of: DEBUG, INFO, WARNING, ERROR, CRITICAL")
+        print("      └─ Must be one of: DEBUG, INFO, WARNING, ERROR, CRITICAL")
         print(f"   ENVIRONMENT: {ENVIRONMENT}")
-        print(f"      └─ Must be one of: development, staging, production")
+        print("      └─ Must be one of: development, staging, production")
         print("\n💡 Try setting LOG_LEVEL=TRACE to see validation fail!")
 
         return LOG_LEVEL, ENVIRONMENT
