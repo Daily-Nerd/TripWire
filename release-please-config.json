@@ -1,6 +1,5 @@
 {
   "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
-  "bootstrap-sha": "",
   "include-v-in-tag": true,
   "separate-pull-requests": false,
   "pull-request-title-pattern": "chore: release ${version}",
@@ -65,5 +64,6 @@
       ],
       "changelog-path": "CHANGELOG.md"
     }
-  }
+  },
+  "last-release-sha": "56b5ac6d33de37a4b0969d311958db7a02b56279"
 }
