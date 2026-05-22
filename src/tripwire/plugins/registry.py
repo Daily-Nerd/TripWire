@@ -98,7 +98,12 @@ def _safe_extract_tarfile(tar: tarfile.TarFile, target_dir: Path) -> None:
             )
 
     # All paths validated, safe to extract
-    tar.extractall(target_dir)  # nosec B202  # Path traversal validated above via _is_safe_path()
+    try:
+        # Python 3.12+: safe extract avoids metadata surprises on 3.14
+        tar.extractall(target_dir, filter="data")  # nosec B202  # _is_safe_path ensures safety
+    except TypeError:
+        # Older Python: no filter arg
+        tar.extractall(target_dir)  # nosec B202  # _is_safe_path ensures safety
 
 
 def _safe_extract_zipfile(zip_file: zipfile.ZipFile, target_dir: Path) -> None:
