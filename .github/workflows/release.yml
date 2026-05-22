@@ -106,12 +106,8 @@ jobs:
             exit 1
           fi
 
-          # Check __init__.py version
-          INIT_VERSION=$(grep '^__version__ = ' src/tripwire/__init__.py | sed 's/__version__ = "\(.*\)"/\1/')
-          if [ "$VERSION" != "$INIT_VERSION" ]; then
-            echo "::error::Version mismatch: tag=$VERSION but __init__.py=$INIT_VERSION"
-            exit 1
-          fi
+          # __version__ is derived from package metadata when installed. Avoid a
+          # duplicated literal that Release Please must keep in sync.
 
           # Check cli/__init__.py version. v1.0.0+ sources from `__version__`, so a
           # reference is acceptable (validated transitively via __init__.py above).
