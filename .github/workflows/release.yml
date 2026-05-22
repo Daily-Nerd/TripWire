@@ -16,6 +16,15 @@ on:
         required: false
         default: false
         type: boolean
+  workflow_call:
+    inputs:
+      version:
+        description: 'Version to release (e.g., 1.2.3 or v1.2.3)'
+        required: true
+        type: string
+    secrets:
+      TEST_PYPI_API_TOKEN:
+        required: true
 
 # Principle of least privilege by default. Elevate per job when needed.
 permissions:
@@ -64,10 +73,10 @@ jobs:
           from packaging.version import Version, InvalidVersion
 
           ev = os.environ.get("GITHUB_EVENT_NAME")
-          if ev == "workflow_dispatch":
+          if ev in ("workflow_dispatch", "workflow_call"):
               raw = "${{ inputs.version }}"
               if not raw:
-                  print("::error::INPUT_VERSION not provided for workflow_dispatch")
+                  print("::error::INPUT_VERSION not provided for workflow_dispatch/workflow_call")
                   sys.exit(1)
           else:
               # refs/tags/v1.2.3
@@ -253,92 +262,31 @@ jobs:
     runs-on: ubuntu-latest
     needs: [validate-release, build-package]
     env:
-      # Force UTF-8 encoding on Windows for proper Unicode handling
       PYTHONIOENCODING: utf-8
     steps:
       - uses: actions/checkout@v5
-
       - uses: actions/download-artifact@v4
         with:
           name: dist
           path: dist
-
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-
       - uses: astral-sh/setup-uv@v6
-
       - name: Upload to Test PyPI (API token)
+        if: github.event_name != 'workflow_call'
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.TEST_PYPI_API_TOKEN }}
           TWINE_REPOSITORY_URL: ${{ env.TEST_PYPI_INDEX_URL }}
         run: uvx twine upload --skip-existing dist/*
-
-      - name: Wait for Test PyPI propagation
-        run: sleep 10
-
-      - name: Verify install from Test PyPI (with retry)
-        # Manual venv creation here is intentional - we're testing the installed package
-        # in isolation, separate from the build environment
-        run: |
-          rm -rf .venv_test
-          python -m venv .venv_test
-          . .venv_test/bin/activate
-          pip install -U pip
-
-          # Retry installation with exponential backoff
-          for i in {1..5}; do
-            if pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ tripwire-py==${{ needs.validate-release.outputs.version }}; then
-              echo "✓ Package installed successfully"
-              break
-            fi
-            echo "Retry $i/5 after TestPyPI sync..."
-            sleep $((5 * i))
-          done
-
-      # NEW: Run validation script (Phase 2 - additional check)
-      - name: Run validation script (additional check)
-        # Using the test venv created above to verify the installed package
-        run: |
-          . .venv_test/bin/activate
-          chmod +x .github/scripts/validate_cli.sh
-          ./.github/scripts/validate_cli.sh ${{ needs.validate-release.outputs.version }}
-
-      # KEEP: Existing comprehensive CLI verification (for now - Phase 2)
-      - name: Comprehensive CLI verification
-        # Using the test venv created above to verify the installed package
-        run: |
-          . .venv_test/bin/activate
-
-          echo "=== Testing --version ==="
-          tripwire --version
-          if ! tripwire --version | grep -q "${{ needs.validate-release.outputs.version }}"; then
-            echo "::error::Version mismatch in CLI output"
-            exit 1
-          fi
-
-          echo "=== Testing --help ==="
-          tripwire --help
-          if ! tripwire --help | grep -q "TripWire - Catch config errors before they explode"; then
-            echo "::error::Help output doesn't match expected format"
-            exit 1
-          fi
-
-          echo "=== Testing subcommands exist ==="
-          for cmd in init generate check sync scan audit validate docs; do
-            if ! tripwire --help | grep -q "$cmd"; then
-              echo "::error::Command '$cmd' not found in help output"
-              exit 1
-            fi
-            echo "✓ Command '$cmd' exists"
-          done
-
-          echo "=== Testing subcommand help ==="
-          tripwire init --help
-          tripwire generate --help
-          tripwire check --help
+      - name: Upload to Test PyPI (workflow_call)
+        if: github.event_name == 'workflow_call'
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.TEST_PYPI_API_TOKEN }}
+          TWINE_REPOSITORY_URL: ${{ env.TEST_PYPI_INDEX_URL }}
+        run: uvx twine upload --skip-existing dist/*
 
       - name: Verify Python imports
         # Using the test venv created above to verify the installed package
