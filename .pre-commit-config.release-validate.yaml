@@ -1,0 +1,9 @@
+repos:
+  - repo: local
+    hooks:
+      - id: release-config-validate
+        name: Validate Release Configuration
+        entry: python .github/scripts/validate_release_config.py
+        language: system
+        pass_filenames: false
+        always_run: true
