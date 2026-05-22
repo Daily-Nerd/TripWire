@@ -5,6 +5,93 @@ All notable changes to TripWire will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0](https://github.com/Daily-Nerd/TripWire/compare/v1.0.2...v2.0.0) (2026-05-22)
+
+
+### ⚠ BREAKING CHANGES
+
+* **release:** TripWireLegacy and the _core_legacy module have been removed. Migrate by replacing `from tripwire import TripWireLegacy` with `from tripwire import TripWire` (or TripWireV2). The public API is preserved.
+
+### Features
+
+* Add comprehensive environment variable usage analysis and dependency graph visualizer in version 0.13.0 ([6186fe4](https://github.com/Daily-Nerd/TripWire/commit/6186fe4b0080a681a3a0e6d86c77d41d916c5ad9))
+* Add comprehensive tests for configuration sources and models ([#11](https://github.com/Daily-Nerd/TripWire/issues/11)) ([84f9d9d](https://github.com/Daily-Nerd/TripWire/commit/84f9d9d8930262decbac78dad297b0fecab9f73b))
+* Add dedicated CLI validation tests and enhance CI/CD workflows ([#7](https://github.com/Daily-Nerd/TripWire/issues/7)) ([b9335eb](https://github.com/Daily-Nerd/TripWire/commit/b9335eb6da221d119e5bd4bf975b3eb2f4d34e35))
+* Add DependencyGraph and DependencyNode classes with comprehensive tests for variable usage analysis ([8e5f8c7](https://github.com/Daily-Nerd/TripWire/commit/8e5f8c7583335a96450042621f4e720fad77ba33))
+* Add environment variable usage analysis and dependency ([9f92252](https://github.com/Daily-Nerd/TripWire/commit/9f9225282aa41ce137abcd23d99d61cbe947f5f3))
+* Add performance tests for schema optimizations and improve stre… ([d4c8b44](https://github.com/Daily-Nerd/TripWire/commit/d4c8b445f77b36f4e2591a34ef3e0605da3e5df7))
+* Add performance tests for schema optimizations and improve streaming TOML writer ([41a7f26](https://github.com/Daily-Nerd/TripWire/commit/41a7f268322e89ef196a4cc595f805cd07bf9cfb))
+* Add schema diff and migration functionality ([#9](https://github.com/Daily-Nerd/TripWire/issues/9)) ([02603ca](https://github.com/Daily-Nerd/TripWire/commit/02603ca5efccad95219aeb53d7fe926715fd100c))
+* Add usage analysis commands to TripWire CLI ([fcecc2c](https://github.com/Daily-Nerd/TripWire/commit/fcecc2c996eabbd1ee5fcfe081e6461fa1dd6fd5))
+* **cli:** add migrate-to-schema command for .env.example to .tripwir… ([#12](https://github.com/Daily-Nerd/TripWire/issues/12)) ([eb7ae78](https://github.com/Daily-Nerd/TripWire/commit/eb7ae78f852945b8697940f579040ec566c3ed1c))
+* Enhance .env and .env.example generation with secure secret handling and improved gitignore checks ([efc2b84](https://github.com/Daily-Nerd/TripWire/commit/efc2b845746d9877108c88052e1fc994fa3cfb49))
+* Enhance security features and performance optimizations ([#41](https://github.com/Daily-Nerd/TripWire/issues/41)) ([c1966d6](https://github.com/Daily-Nerd/TripWire/commit/c1966d6c2cf0f54b4a3b5eab06800c8e06374531))
+* Enhance TripWire schema and validation system ([102baf1](https://github.com/Daily-Nerd/TripWire/commit/102baf1b1e09aa2a16e1f340ee1d0ce18f7d8af6))
+* Enhance TripWire schema and validation system ([d2480bd](https://github.com/Daily-Nerd/TripWire/commit/d2480bde44093e3a6eade59edb9b441da7325636))
+* Generate a secure random SECRET_KEY for web project configuration ([499fc2a](https://github.com/Daily-Nerd/TripWire/commit/499fc2a0c892e96cf31e9159f5604bf378b54073))
+* Implement core functionality for environment variable management ([2f01971](https://github.com/Daily-Nerd/TripWire/commit/2f019710ff9e88ca4f69a70225ce2be993b11e21))
+* Implement core functionality for environment variable management ([5fac6d0](https://github.com/Daily-Nerd/TripWire/commit/5fac6d00cc9a5659c4a221e1eddb36300c2810b6))
+* Implement core functionality for environment variable management ([aec5e93](https://github.com/Daily-Nerd/TripWire/commit/aec5e93bd4d220681926bb924c7cedf78eb73238))
+* Implement deferred validation for custom validators with new prefix convention ([8c437c4](https://github.com/Daily-Nerd/TripWire/commit/8c437c4488c3a64b77c600694406365d88f48500))
+* Implement deferred validation for custom validators with prefix ([322179d](https://github.com/Daily-Nerd/TripWire/commit/322179d12a63a466a1e90eb5deedb745084390b8))
+* Implement Secret Protection System and Logging Integration ([9fb7733](https://github.com/Daily-Nerd/TripWire/commit/9fb7733751adcb6e075ef5236533ad0ecb366cc7))
+* Implement Secret Protection System and Logging Integration ([ac2ed37](https://github.com/Daily-Nerd/TripWire/commit/ac2ed37f677fc4ece1323a8271be6fbb22e39187))
+* Implement type inference and typed convenience methods ([#10](https://github.com/Daily-Nerd/TripWire/issues/10)) ([a205103](https://github.com/Daily-Nerd/TripWire/commit/a2051035e2a5b0af51efc4b9e0303bc75005a38e))
+* Introduce core components for TripWire with type inference and … ([#42](https://github.com/Daily-Nerd/TripWire/issues/42)) ([d73f53b](https://github.com/Daily-Nerd/TripWire/commit/d73f53b3d4dd3104fa9d24e807551dd92a6e0070))
+* Introduce custom validator prefix for deferred validation in schema handling ([2e8bba9](https://github.com/Daily-Nerd/TripWire/commit/2e8bba9f7d7e788caddc07050a0074945aeb1063))
+* Introduced ´security´ group command and improved DX flow ([#40](https://github.com/Daily-Nerd/TripWire/issues/40)) ([b2c3a88](https://github.com/Daily-Nerd/TripWire/commit/b2c3a88cecbc083edad99d6de2a9b3922c8c4440))
+* Optimize TOML schema handling with performance improvements and streamlined variable merging ([40b5c66](https://github.com/Daily-Nerd/TripWire/commit/40b5c6688add082c37847499298bb31d0b6043e8))
+* Refactor project templates for environment variable management with dynamic secret injection ([cbbc689](https://github.com/Daily-Nerd/TripWire/commit/cbbc689931595cd5955babd0a0defb70f3f769d0))
+* Refactor tests and add comprehensive usage tracker tests ([91dac8e](https://github.com/Daily-Nerd/TripWire/commit/91dac8e7cfc71512b2bdff3c1cce46bfaf4790cf))
+* Refactor usage tracking and scanning logic to utilize shared constants for skipped directories ([9a947e1](https://github.com/Daily-Nerd/TripWire/commit/9a947e1ef2bfa14594c4e4f1334442dcb66dde9d))
+* **tool_config:** load TripWire tool settings from pyproject.toml ([eb7ae78](https://github.com/Daily-Nerd/TripWire/commit/eb7ae78f852945b8697940f579040ec566c3ed1c))
+* Update .env and .env.example generation to use secure random keys and placeholders ([a6fc88d](https://github.com/Daily-Nerd/TripWire/commit/a6fc88d2234b9c4a1ec778fd9a56f050ff6ac388))
+* Update CHANGELOG for version 0.12.4 with performance optimizations, security fixes, and code quality improvements ([d633497](https://github.com/Daily-Nerd/TripWire/commit/d633497bdfca6f6411eb9981ad5393d1d9ea4e25))
+* Update CI configuration and remove status badge workflow ([43079fc](https://github.com/Daily-Nerd/TripWire/commit/43079fc9ff75f2965b3b3f9bbf1c89d80177269b))
+
+
+### Bug Fixes
+
+* allow manual release runs for existing release-please tags ([5709de9](https://github.com/Daily-Nerd/TripWire/commit/5709de98b60c550ad3caae10291d560806c0654a))
+* **build:** drop force-include directive, ship JSON via include pattern ([3edd31f](https://github.com/Daily-Nerd/TripWire/commit/3edd31f71c43487c6b58d6dc71d07c0dee7114e2))
+* **ci:** release.yml accepts dynamic CLI version sourced from __version__ ([d1c53fc](https://github.com/Daily-Nerd/TripWire/commit/d1c53fcddcfc9fe3a0f749ef1132f5a7761e32f1))
+* **core:** validate the default value, not just the environment value ([683201c](https://github.com/Daily-Nerd/TripWire/commit/683201c4e1ac703103a19d6a32ad17bc8b30fc34))
+* Correct error types in README examples ([#50](https://github.com/Daily-Nerd/TripWire/issues/50)) ([d416102](https://github.com/Daily-Nerd/TripWire/commit/d4161026ea3ef51a5e2f2907ef8d984bde7b9fb2))
+* Correct error types in README examples ([#50](https://github.com/Daily-Nerd/TripWire/issues/50)) ([cfa557c](https://github.com/Daily-Nerd/TripWire/commit/cfa557c734863de5f2be776fd8eec9d0888a5c3f))
+* correct release-please workflow_call version expression ([bb85bc3](https://github.com/Daily-Nerd/TripWire/commit/bb85bc3cd9bb554a9b1394dfdcb320d1fd966f75))
+* create TestPyPI verification environment before import checks ([89cdc88](https://github.com/Daily-Nerd/TripWire/commit/89cdc889a3c1be32928419b02eba990207a5598e))
+* derive __version__ from package metadata for release-please compatibility ([#78](https://github.com/Daily-Nerd/TripWire/issues/78)) ([4488fc9](https://github.com/Daily-Nerd/TripWire/commit/4488fc90b8241e18428bbc38aaa57508371c075b))
+* Ensure .env.example uses starter_vars template to prevent leaking secrets ([bf10dcf](https://github.com/Daily-Nerd/TripWire/commit/bf10dcf54cb5ba67b38cf8f937ea7b01fd859afc))
+* **git_audit:** redact pickaxe secret in errors, drop spurious raise on stream early-exit ([bc214ac](https://github.com/Daily-Nerd/TripWire/commit/bc214ac9080d9fea955bd13f3d66042e424a45d1))
+* grant id-token permission to release-please caller workflow ([d356340](https://github.com/Daily-Nerd/TripWire/commit/d3563400f231d0845227a57e30ef92eae2ad4385))
+* Improve .gitignore entry handling for .env files ([aaab065](https://github.com/Daily-Nerd/TripWire/commit/aaab0657ad5cc6844dc8f0d67788b7bafd7c35a9))
+* Improve audit command to search for actual secret values instead of variable names ([2bf8704](https://github.com/Daily-Nerd/TripWire/commit/2bf8704cafc71cf71a54f30e020a2e63284a1bd1))
+* Improve schema validation for quoted values in .env files ([d24c498](https://github.com/Daily-Nerd/TripWire/commit/d24c498d8f37b405e7281605eaca51c2f6c2227e))
+* Improve schema validation for quoted values in .env files ([fdfbe54](https://github.com/Daily-Nerd/TripWire/commit/fdfbe548197617ecdc5db09e371d2be299c51daf))
+* Improve subprocess command handling in audit tests for better compatibility and error reporting ([1127a75](https://github.com/Daily-Nerd/TripWire/commit/1127a750adeb20991ed987928f3d8d2b2de7ac4a))
+* let tag-triggered release workflow handle publishing after release-please ([5feb84a](https://github.com/Daily-Nerd/TripWire/commit/5feb84ada3472d4223905f3d3c50171b856bba8c))
+* Optimize memory usage and processing in git audit ([08dd388](https://github.com/Daily-Nerd/TripWire/commit/08dd3882653abe2e057686efbe53a93f4826896c))
+* Optimize memory usage and processing in git audit; implement chunked processing and string interning ([c7e8f66](https://github.com/Daily-Nerd/TripWire/commit/c7e8f664b6d36b71bd4876598fe53b2c55baf04f))
+* **parser:** three correctness bugs surfaced by audit ([da68bc9](https://github.com/Daily-Nerd/TripWire/commit/da68bc97ac29d056a626f5e37a6d63648d9474ca))
+* Remove unused GitAuditError import and streamline exception handling in tests ([f7bef47](https://github.com/Daily-Nerd/TripWire/commit/f7bef4762614a3ecb5e333e0f53f75d87e7d239d))
+* Schema handling and improve tests for bug fixes in TripWire ([85ede4c](https://github.com/Daily-Nerd/TripWire/commit/85ede4cb935409764393a26356ab952e5642e009))
+* Schema handling and improve tests for bug fixes in TripWire ([811f03d](https://github.com/Daily-Nerd/TripWire/commit/811f03d67acdc457788da44e77a97a26075c5e01))
+* **schema:** three correctness bugs in VariableSchema.validate() ([cf5795a](https://github.com/Daily-Nerd/TripWire/commit/cf5795a9bd675dd85d67b57b8a337b89bcf5aca5))
+* Typo in release.yml and clean up imports in secret.py ([aff543e](https://github.com/Daily-Nerd/TripWire/commit/aff543e12812bc7295d46e2036a99a35bd5c07cc))
+* Update changelog links for version 0.12.0 release ([f13c3ac](https://github.com/Daily-Nerd/TripWire/commit/f13c3ac40fd41ed9678495c8a8796b4a7f1807d3))
+* Update version to 0.12.1 and improve audit command to search for actual secret values instead of variable names ([8d07122](https://github.com/Daily-Nerd/TripWire/commit/8d07122db904cf42f15408c06f3032491bd1bac6))
+* use release-please manifest for versions only ([#76](https://github.com/Daily-Nerd/TripWire/issues/76)) ([4a96ac1](https://github.com/Daily-Nerd/TripWire/commit/4a96ac1c5aab26f947401380eb8a511358cf9b49))
+
+
+### Documentation
+
+* **readme:** reposition as schema-driven library, drop platform aspirations ([e34087d](https://github.com/Daily-Nerd/TripWire/commit/e34087d62873f1c288fc4fa622488cade035cf46))
+
+
+### Miscellaneous Chores
+
+* **release:** cut v1.0.0 — remove TripWireLegacy, flip to Production/Stable ([3c41c6d](https://github.com/Daily-Nerd/TripWire/commit/3c41c6d408b2d5119a3b12713c959f232b233992))
+
 ## [1.0.2](https://github.com/Daily-Nerd/TripWire/compare/v1.0.1...v1.0.2) (2026-05-22)
 
 
